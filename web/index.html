@@ -9,63 +9,80 @@
 <body>
   <div class="page">
     <header class="header">
-      <div>
-        <h1>Spending Analyzer</h1>
-        <p class="subtitle">Local dashboard — statement status, export, and natural-language queries</p>
+      <h1>Spending Analyzer</h1>
+      <div class="header-stats" id="stats" aria-live="polite">
+        <span><strong id="stat-tx">—</strong> transactions</span>
+        <span class="sep">·</span>
+        <span class="stat-ok"><strong id="stat-processed">—</strong> processed</span>
+        <span class="sep">·</span>
+        <span class="stat-warn"><strong id="stat-pending">—</strong> pending</span>
       </div>
+      <nav class="view-nav" aria-label="Main views">
+        <button type="button" class="nav-tab active" data-view="overview">Overview</button>
+        <button type="button" class="nav-tab" data-view="data">Database</button>
+      </nav>
       <div class="header-actions">
         <button type="button" id="refresh-btn" class="btn btn-secondary">Refresh</button>
-        <a id="export-btn" class="btn btn-primary" href="/api/export/transactions.csv" download>Download transactions CSV</a>
+        <a id="export-btn" class="btn btn-primary" href="/api/export/transactions.csv" download>Export CSV</a>
       </div>
     </header>
 
-    <section class="stats" id="stats" aria-live="polite">
-      <div class="stat-card">
-        <span class="stat-label">Transactions</span>
-        <span class="stat-value" id="stat-tx">—</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-label">Processed files</span>
-        <span class="stat-value stat-ok" id="stat-processed">—</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-label">Pending files</span>
-        <span class="stat-value stat-warn" id="stat-pending">—</span>
-      </div>
-      <div class="stat-card stat-wide">
-        <span class="stat-label">Database</span>
-        <span class="stat-value stat-mono" id="stat-db">—</span>
-      </div>
-    </section>
+    <div id="db-locked-banner" class="db-locked-banner hidden" role="status">
+      Database is busy (CLI processing). File list is from disk; counts refresh when processing finishes.
+    </div>
 
-    <section class="panel">
-      <h2>Statement files</h2>
-      <p class="hint">Process files from the CLI with <code>python spending.py process-account &lt;id&gt;</code>. Status updates after each successful run.</p>
-      <div id="accounts-loading" class="loading">Loading…</div>
-      <div id="accounts-error" class="error hidden" role="alert"></div>
-      <div id="accounts"></div>
-    </section>
-
-    <section class="panel panel-analyze">
-      <h2>Ask about your spending</h2>
-      <p class="hint">Uses the same analyzer as <code>python spending.py analyze "…"</code>. Answers are generated from your DuckDB data.</p>
-      <form id="analyze-form">
-        <label class="sr-only" for="question">Question</label>
-        <textarea
-          id="question"
-          name="question"
-          rows="3"
-          placeholder="e.g. What were my top 5 expense categories in 2024?"
-          required
-        ></textarea>
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary" id="analyze-btn">Ask</button>
+    <main id="view-overview" class="view main-grid">
+      <section class="panel files-panel">
+        <div class="panel-head">
+          <h2>Statement files</h2>
+          <span class="panel-hint" title="python spending.py process-account &lt;id&gt;">Process via CLI</span>
         </div>
-      </form>
-      <div id="analyze-loading" class="loading hidden">Analyzing… this may take a moment.</div>
-      <div id="analyze-error" class="error hidden" role="alert"></div>
-      <article id="analyze-result" class="result hidden" aria-live="polite"></article>
-    </section>
+        <div id="accounts-loading" class="loading">Loading…</div>
+        <div id="accounts-error" class="error hidden" role="alert"></div>
+        <div id="accounts" class="accounts-grid"></div>
+      </section>
+
+      <section class="panel query-panel">
+        <h2>Ask about your spending</h2>
+        <form id="analyze-form" class="analyze-form">
+          <label class="sr-only" for="question">Question</label>
+          <textarea
+            id="question"
+            name="question"
+            rows="3"
+            placeholder="What were my top expense categories in 2024?"
+            required
+          ></textarea>
+          <button type="submit" class="btn btn-primary" id="analyze-btn">Ask</button>
+        </form>
+        <div id="analyze-loading" class="loading hidden">Analyzing…</div>
+        <div id="analyze-error" class="error hidden" role="alert"></div>
+        <article id="analyze-result" class="result hidden" aria-live="polite"></article>
+      </section>
+    </main>
+
+    <main id="view-data" class="view data-view hidden">
+      <div class="data-toolbar">
+        <div id="table-tabs" class="table-tabs" role="tablist"></div>
+        <div class="data-meta">
+          <span id="table-count" class="table-count"></span>
+          <div class="pager">
+            <button type="button" id="pager-prev" class="btn btn-secondary btn-sm" disabled>Prev</button>
+            <span id="pager-info" class="pager-info">—</span>
+            <button type="button" id="pager-next" class="btn btn-secondary btn-sm" disabled>Next</button>
+          </div>
+        </div>
+      </div>
+      <div id="table-loading" class="loading hidden">Loading table…</div>
+      <div id="table-error" class="error hidden" role="alert"></div>
+      <div class="table-wrap">
+        <table id="data-table" class="data-table">
+          <thead id="data-thead"></thead>
+          <tbody id="data-tbody"></tbody>
+        </table>
+        <p id="table-empty" class="table-empty hidden">No rows in this table yet.</p>
+      </div>
+    </main>
   </div>
   <script src="/static/app.js"></script>
 </body>

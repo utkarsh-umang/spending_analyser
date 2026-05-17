@@ -7,7 +7,6 @@ import duckdb
 
 from backend.config import get_db_path, load_categories_config
 from backend.db.connection import get_connection
-from backend.db.schema import init_schema
 from backend.llm.client import call_agent_loop, load_prompt
 from backend.llm.schemas import ANALYZER_TOOL, FINAL_ANSWER_TOOL
 
@@ -50,8 +49,7 @@ def run_analyzer(
     db = get_db_path(str(db_path) if db_path else None)
     categories = load_categories_config()
 
-    with get_connection(db) as conn:
-        init_schema(conn)
+    with get_connection(db, read_only=True) as conn:
         tx_count = conn.execute("SELECT COUNT(*) FROM transactions").fetchone()
         if not tx_count or tx_count[0] == 0:
             return "No transactions in the database. Process statements first with `spending process`."

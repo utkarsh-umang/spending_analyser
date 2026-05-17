@@ -11,12 +11,14 @@ from backend.analysis.agent import run_analyzer
 from backend.config import (
     get_db_path,
     load_accounts_config,
+    load_categories_config,
     resolve_account,
     resolve_statement_path,
 )
 from backend.db.connection import get_connection
 from backend.db import processed_files as pf
 from backend.db.schema import init_schema
+from backend.db import merchant_rules as mr
 from backend.db import transactions as txdb
 from backend.pipeline.orchestrator import run_document
 from backend.memory.payee_store import PayeeStore
@@ -208,6 +210,58 @@ def serve(
         host=host,
         port=port,
         reload=reload,
+    )
+
+
+@app.command("correct")
+def correct_transaction(
+    category: str = typer.Option(..., "--category", "-c", help="Correct category name"),
+    tx_id: Optional[int] = typer.Option(None, "--id", help="Transaction id"),
+    desc: Optional[str] = typer.Option(
+        None, "--desc", help="Match description containing this text"
+    ),
+    date: Optional[str] = typer.Option(None, "--date", help="Optional date YYYY-MM-DD"),
+    amount: Optional[float] = typer.Option(None, "--amount", help="Optional amount"),
+    patterns: Optional[list[str]] = typer.Option(
+        None,
+        "--pattern",
+        "-p",
+        help="Merchant rule pattern (repeat -p for multiple). Defaults to --desc if omitted.",
+    ),
+    db_path: Optional[str] = typer.Option(None, "--db-path"),
+) -> None:
+    """Fix category on stored transaction(s) and save merchant rules for future runs."""
+    categories = load_categories_config()
+    if category not in categories.categories:
+        raise typer.BadParameter(
+            f"Unknown category '{category}'. Use a name from config/categories.yaml."
+        )
+
+    if tx_id is None and not desc:
+        raise typer.BadParameter("Provide --id or --desc to identify the transaction(s).")
+
+    rule_patterns: list[str] = list(patterns or [])
+    if desc and desc.upper() not in [p.upper() for p in rule_patterns]:
+        rule_patterns.append(desc)
+
+    db = _db_opt(db_path)
+    with get_connection(db) as conn:
+        init_schema(conn)
+        n = txdb.update_category(
+            conn,
+            transaction_id=tx_id,
+            description_contains=desc,
+            date=date,
+            amount=amount,
+            category=category,
+        )
+        for p in rule_patterns:
+            rule_pattern = p if len(p) <= 40 else p[:40]
+            mr.upsert_rule(conn, rule_pattern, category, "user")
+
+    console.print(
+        f"[green]Updated {n} transaction(s) → {category}[/green]"
+        + (f"; saved {len(rule_patterns)} merchant rule(s)" if rule_patterns else "")
     )
 
 

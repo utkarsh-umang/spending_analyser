@@ -1,3 +1,10 @@
+const PAGE_SIZE = 50;
+
+let currentView = "overview";
+let currentTable = "transactions";
+let tableOffset = 0;
+let tableTotal = 0;
+
 function $(id) {
   return document.getElementById(id);
 }
@@ -12,8 +19,24 @@ function hide(el) {
 
 function escapeHtml(text) {
   const div = document.createElement("div");
-  div.textContent = text;
+  div.textContent = text == null ? "" : String(text);
   return div.innerHTML;
+}
+
+function truncate(str, max = 36) {
+  const s = String(str);
+  return s.length > max ? s.slice(0, max - 1) + "…" : s;
+}
+
+function formatCell(col, val) {
+  if (val == null) return "—";
+  if (col === "amount" && typeof val === "number") {
+    return val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  if (typeof val === "string" && val.length > 48) {
+    return truncate(val, 48);
+  }
+  return String(val);
 }
 
 function renderAccounts(data) {
@@ -26,50 +49,36 @@ function renderAccounts(data) {
   }
 
   for (const account of data.accounts) {
-    const block = document.createElement("section");
-    block.className = "account-block";
+    const card = document.createElement("div");
+    card.className = "account-card";
 
-    const header = document.createElement("div");
-    header.className = "account-header";
-    header.innerHTML = `
-      <h3>${escapeHtml(account.label)}</h3>
-      <span class="account-meta">${escapeHtml(account.id)} · ${escapeHtml(account.kind)} · ${account.file_count} file(s)</span>
-    `;
-    block.appendChild(header);
+    const title = document.createElement("h3");
+    title.className = "account-card-title";
+    title.textContent = account.label;
+    title.title = `${account.id} · ${account.kind}`;
+    card.appendChild(title);
 
     if (!account.files.length) {
       const empty = document.createElement("p");
       empty.className = "empty-account";
-      empty.textContent = "No PDF or CSV files in this folder.";
-      block.appendChild(empty);
+      empty.textContent = "No statement files";
+      card.appendChild(empty);
     } else {
-      const table = document.createElement("table");
-      table.className = "file-table";
-      table.innerHTML = `
-        <thead>
-          <tr>
-            <th>File</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      `;
-      const tbody = table.querySelector("tbody");
       for (const file of account.files) {
-        const tr = document.createElement("tr");
-        const badgeClass =
-          file.status === "processed" ? "badge-processed" : "badge-pending";
-        const label = file.status === "processed" ? "Processed" : "Pending";
-        tr.innerHTML = `
-          <td title="${escapeHtml(file.path)}">${escapeHtml(file.name)}</td>
-          <td><span class="badge ${badgeClass}">${label}</span></td>
+        const row = document.createElement("div");
+        row.className = "file-row";
+        const isDone = file.status === "processed";
+        const badgeClass = isDone ? "badge-processed" : "badge-pending";
+        const badgeLabel = isDone ? "Done" : "Pending";
+        row.innerHTML = `
+          <span class="file-name" title="${escapeHtml(file.path)}">${escapeHtml(truncate(file.name, 32))}</span>
+          <span class="badge ${badgeClass}">${badgeLabel}</span>
         `;
-        tbody.appendChild(tr);
+        card.appendChild(row);
       }
-      block.appendChild(table);
     }
 
-    container.appendChild(block);
+    container.appendChild(card);
   }
 }
 
@@ -87,7 +96,6 @@ async function loadStatus() {
     $("stat-tx").textContent = data.transaction_count.toLocaleString();
     $("stat-processed").textContent = String(data.processed_file_count);
     $("stat-pending").textContent = String(data.pending_file_count);
-    $("stat-db").textContent = data.db_path;
 
     const exportBtn = $("export-btn");
     if (!data.db_exists || data.transaction_count === 0) {
@@ -101,12 +109,150 @@ async function loadStatus() {
     }
 
     renderAccounts(data);
+    const lockBanner = $("db-locked-banner");
+    if (data.db_locked) {
+      show(lockBanner);
+    } else {
+      hide(lockBanner);
+    }
   } catch (e) {
     errEl.textContent = `Failed to load status: ${e.message}`;
     show(errEl);
   } finally {
     hide(loading);
   }
+}
+
+function switchView(view) {
+  currentView = view;
+  document.querySelectorAll(".nav-tab").forEach((tab) => {
+    tab.classList.toggle("active", tab.dataset.view === view);
+  });
+  $("view-overview").classList.toggle("hidden", view !== "overview");
+  $("view-data").classList.toggle("hidden", view !== "data");
+  if (view === "data") {
+    loadTableList().then(() => loadTable(currentTable));
+  }
+}
+
+async function loadTableList() {
+  const res = await fetch("/api/tables");
+  if (!res.ok) return;
+  const data = await res.json();
+  const tabs = $("table-tabs");
+  tabs.innerHTML = "";
+
+  for (const t of data.tables) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "table-tab" + (t.id === currentTable ? " active" : "");
+    btn.dataset.table = t.id;
+    const countLabel =
+      t.count != null ? ` (${Number(t.count).toLocaleString()})` : "";
+    btn.textContent = `${t.label}${countLabel}`;
+    btn.setAttribute("role", "tab");
+    btn.addEventListener("click", () => {
+      currentTable = t.id;
+      tableOffset = 0;
+      document.querySelectorAll(".table-tab").forEach((el) => {
+        el.classList.toggle("active", el.dataset.table === t.id);
+      });
+      loadTable(t.id);
+    });
+    tabs.appendChild(btn);
+  }
+
+  if (!data.tables.some((t) => t.id === currentTable) && data.tables.length) {
+    currentTable = data.tables[0].id;
+  }
+
+  const lockBanner = $("db-locked-banner");
+  if (data.db_locked) {
+    show(lockBanner);
+  }
+}
+
+async function loadTable(tableId) {
+  const loading = $("table-loading");
+  const errEl = $("table-error");
+  const table = $("data-table");
+  const empty = $("table-empty");
+
+  hide(errEl);
+  hide(empty);
+  show(loading);
+  show(table);
+
+  try {
+    const res = await fetch(
+      `/api/tables/${tableId}?limit=${PAGE_SIZE}&offset=${tableOffset}`
+    );
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      const detail = body.detail;
+      throw new Error(
+        typeof detail === "string" ? detail : res.statusText
+      );
+    }
+    const data = await res.json();
+    tableTotal = data.total;
+    renderDataTable(data);
+    updatePager(data);
+    $("table-count").textContent = `${data.total.toLocaleString()} rows total`;
+  } catch (e) {
+    errEl.textContent = `Failed to load table: ${e.message}`;
+    show(errEl);
+    $("data-thead").innerHTML = "";
+    $("data-tbody").innerHTML = "";
+  } finally {
+    hide(loading);
+  }
+}
+
+function renderDataTable(data) {
+  const thead = $("data-thead");
+  const tbody = $("data-tbody");
+  const empty = $("table-empty");
+  const table = $("data-table");
+
+  if (!data.rows.length) {
+    thead.innerHTML = "";
+    tbody.innerHTML = "";
+    hide(table);
+    show(empty);
+    return;
+  }
+
+  show(table);
+  hide(empty);
+
+  thead.innerHTML =
+    "<tr>" +
+    data.columns.map((c) => `<th>${escapeHtml(c)}</th>`).join("") +
+    "</tr>";
+
+  tbody.innerHTML = data.rows
+    .map((row) => {
+      const cells = data.columns
+        .map((col) => {
+          const val = row[col];
+          const cls = col === "amount" || col === "id" ? " num" : "";
+          const title = val != null && String(val).length > 48 ? escapeHtml(String(val)) : "";
+          return `<td class="${cls.trim()}"${title ? ` title="${title}"` : ""}>${escapeHtml(formatCell(col, val))}</td>`;
+        })
+        .join("");
+      return `<tr>${cells}</tr>`;
+    })
+    .join("");
+}
+
+function updatePager(data) {
+  const start = data.total === 0 ? 0 : data.offset + 1;
+  const end = Math.min(data.offset + data.rows.length, data.total);
+  $("pager-info").textContent =
+    data.total === 0 ? "No rows" : `${start}–${end} of ${data.total}`;
+  $("pager-prev").disabled = data.offset <= 0;
+  $("pager-next").disabled = data.offset + data.rows.length >= data.total;
 }
 
 async function submitQuestion(event) {
@@ -149,7 +295,27 @@ async function submitQuestion(event) {
   }
 }
 
-$("refresh-btn").addEventListener("click", loadStatus);
+document.querySelectorAll(".nav-tab").forEach((tab) => {
+  tab.addEventListener("click", () => switchView(tab.dataset.view));
+});
+
+$("refresh-btn").addEventListener("click", () => {
+  loadStatus();
+  if (currentView === "data") {
+    loadTableList().then(() => loadTable(currentTable));
+  }
+});
+
+$("pager-prev").addEventListener("click", () => {
+  tableOffset = Math.max(0, tableOffset - PAGE_SIZE);
+  loadTable(currentTable);
+});
+
+$("pager-next").addEventListener("click", () => {
+  tableOffset += PAGE_SIZE;
+  loadTable(currentTable);
+});
+
 $("analyze-form").addEventListener("submit", submitQuestion);
 
 loadStatus();

@@ -33,6 +33,20 @@
       "notes": "self",
       "source": "user",
       "updated_at": "2026-05-17T12:18:29.380812+00:00"
+    },
+    {
+      "name": "Zepto",
+      "patterns": [
+        "ZEPTO",
+        "RAZGEDDIT",
+        "RAZGEDDIT CONVENIENCE",
+        "httpswwwz"
+      ],
+      "relation": "merchant",
+      "category": "Quick Commerce",
+      "notes": "Zepto quick commerce; card statement often shows RAZGEDDIT CONVENIENCE.",
+      "source": "user",
+      "updated_at": "2026-05-17T16:30:00+00:00"
     }
   ]
 }
