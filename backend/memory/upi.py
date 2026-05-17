@@ -4,6 +4,11 @@ import re
 
 # Common Indian bank / UPI narration patterns
 _UPI_PATTERNS = [
+    # SBI: UPI/CR/{ref}/{payee}/{bank}/... or UPI/DR/{ref}/{payee}/...
+    re.compile(
+        r"UPI[-/](?:CR|DR)[-/]\d+[-/](?P<payee>[A-Za-z][A-Za-z0-9\s]{0,20}?)(?:[-/]|@)",
+        re.I,
+    ),
     re.compile(r"UPI[-/](?P<payee>[A-Z0-9][A-Z0-9\s\.\-]{1,40}?)(?:[-/]|@|\d)", re.I),
     re.compile(r"UPI[-/]DR[-/](?P<payee>[A-Z0-9][A-Z0-9\s\.\-]{1,40}?)(?:[-/]|@)", re.I),
     re.compile(r"Paid to (?P<payee>[A-Za-z][A-Za-z\s\.]{1,40})", re.I),
@@ -25,17 +30,28 @@ _BUSINESS_MARKERS = re.compile(
 )
 
 
-def extract_payee(description: str) -> str | None:
-    """Best-effort payee name from a transaction description."""
+def extract_payee_tokens(description: str) -> list[str]:
+    """Payee-like tokens from UPI/IMPS paths (SBI, ICICI, etc.)."""
     desc = description.strip()
+    tokens: list[str] = []
+    seen: set[str] = set()
     for pattern in _UPI_PATTERNS:
         m = pattern.search(desc)
         if m:
             payee = m.group("payee").strip(" -./")
             payee = re.sub(r"\s+", " ", payee)
             if len(payee) >= 2:
-                return payee.upper()
-    return None
+                key = payee.upper()
+                if key not in seen:
+                    seen.add(key)
+                    tokens.append(payee)
+    return tokens
+
+
+def extract_payee(description: str) -> str | None:
+    """Best-effort payee name from a transaction description."""
+    tokens = extract_payee_tokens(description)
+    return tokens[0].upper() if tokens else None
 
 
 def is_likely_p2p_transfer(description: str) -> bool:

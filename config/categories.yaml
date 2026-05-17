@@ -38,6 +38,9 @@ income_categories:
   - Rental Income
   - Credit Card Payment
   - Internal Transfer
+  - Family Transfer
+  - Splitwise Settlements
+  - Roommate and Shared Expenses
   - Other Income
 
 # Credits on credit card statements — HITL/LLM use this short list first
@@ -51,6 +54,12 @@ category_flags:
   Credit Card Payment:
     counts_as_income: false
   Internal Transfer:
+    counts_as_income: false
+  Family Transfer:
+    counts_as_income: false
+  Splitwise Settlements:
+    counts_as_income: false
+  Roommate and Shared Expenses:
     counts_as_income: false
 
 income_salary_min_amount: 10000

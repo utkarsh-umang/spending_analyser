@@ -1,7 +1,4 @@
 description: Categories added during HITL — merged with categories.yaml
 expense_categories: []
-income_categories:
-- Splitwise Settlements
-category_flags:
-  Splitwise Settlements:
-    counts_as_income: false
+income_categories: []
+category_flags: {}

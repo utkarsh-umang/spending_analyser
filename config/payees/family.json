@@ -128,10 +128,13 @@
       "patterns": [
         "BHARAT PAWAR",
         "BHARAT PAW",
+        "BHARAT P",
         "BHARATPAWARHBL",
         "BHARATPAWARHBL-",
         "UPI/BHARAT PAW/",
-        "UPI/BHARATPAWARHBL"
+        "UPI/BHARAT P/",
+        "UPI/BHARATPAWARHBL",
+        "/BHARAT P/"
       ],
       "relation": "father",
       "category": "Family Transfer",

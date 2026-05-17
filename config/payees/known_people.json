@@ -122,13 +122,17 @@
       "name": "Nandita Mathur",
       "patterns": [
         "NANDITA MATHUR",
-        "UPI/NANDITAMATHUR14/SPLITIWISE/STATE BAN"
+        "NANDITA MA",
+        "NANDITA M",
+        "/NANDITA ",
+        "UPI/NANDITAMATHUR14/SPLITIWISE/STATE BAN",
+        "UPI/NANDITA MA/NANDITAMATHUR1/NOVDEC REN"
       ],
       "relation": "roommate",
       "category": "Roommate and Shared Expenses",
-      "notes": "nandita payment for some shared expense",
+      "notes": "Roommate — SBI shows truncated 'Nandita'",
       "source": "user",
-      "updated_at": "2026-05-17T17:53:03.767813+00:00"
+      "updated_at": "2026-05-17T20:30:00.000000+00:00"
     },
     {
       "name": "UTKARSH",
@@ -262,18 +266,6 @@
       "updated_at": "2026-05-17T19:53:14.807038+00:00"
     },
     {
-      "name": "NANDITA MA",
-      "patterns": [
-        "NANDITA MA",
-        "UPI/NANDITA MA/NANDITAMATHUR1/NOVDEC REN"
-      ],
-      "relation": "friend",
-      "category": "Splitwise Settlements",
-      "notes": "nandita",
-      "source": "user",
-      "updated_at": "2026-05-17T19:53:29.522174+00:00"
-    },
-    {
       "name": "KRUTIKA TA",
       "patterns": [
         "KRUTIKA TA",
@@ -289,13 +281,57 @@
       "name": "Shambhavi",
       "patterns": [
         "SHAMBHAVI",
-        "UPI/SHAMBHAVI/GEETASHUB-1@OK/UPI/STATE B"
+        "SHAMBHAV",
+        "/SHAMBHAV/",
+        "UPI/SHAMBHAVI/GEETASHUB-1@OK/UPI/STATE B",
+        "28SHAMBH"
       ],
       "relation": "friend",
       "category": "Splitwise Settlements",
-      "notes": "shambhavi og",
+      "notes": "Friend — SBI truncates to SHAMBHAV",
       "source": "user",
-      "updated_at": "2026-05-17T19:55:47.852452+00:00"
+      "updated_at": "2026-05-17T20:30:00.000000+00:00"
+    },
+    {
+      "name": "Sanskriti",
+      "patterns": [
+        "SANSKRIT",
+        "SANSKRITI",
+        "/SANSKRIT/",
+        "UMA.SANS"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "Friend Sanskriti — SBI shows SANSKRIT",
+      "source": "user",
+      "updated_at": "2026-05-17T20:30:00.000000+00:00"
+    },
+    {
+      "name": "Rohan Regi",
+      "patterns": [
+        "ROHAN REGI",
+        "ROHAN REGI/",
+        "/ROHAN REGI/",
+        "ROHANR"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "Friend Rohan Regi",
+      "source": "user",
+      "updated_at": "2026-05-17T20:30:00.000000+00:00"
+    },
+    {
+      "name": "Shivani",
+      "patterns": [
+        "SHIVANI",
+        "/SHIVANI/",
+        "SHIVANGI"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "Friend Shivani (not self-transfer Shivani PA)",
+      "source": "user",
+      "updated_at": "2026-05-17T20:30:00.000000+00:00"
     },
     {
       "name": "LOAN REPAYMENT",

@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal
 
 from backend.config import PROJECT_ROOT
+from backend.memory.upi import extract_payee_tokens
 from backend.models import TransactionType
 
 PAYEES_DIR = PROJECT_ROOT / "config" / "payees"
@@ -29,12 +31,37 @@ class PayeeEntry:
 
     def matches(self, description: str) -> bool:
         desc_upper = description.upper()
+        tokens = {t.upper() for t in extract_payee_tokens(description)}
+
         for pattern in self.patterns:
-            if pattern.upper() in desc_upper:
+            p = pattern.upper().strip()
+            if not p or (len(p) < 4 and p.isdigit()):
+                continue
+            if p in tokens:
                 return True
-        if self.name.upper() in desc_upper:
+            if self._pattern_in_description(p, desc_upper):
+                return True
+
+        name_upper = self.name.upper()
+        if name_upper in tokens:
+            return True
+        if len(name_upper) >= 4 and self._pattern_in_description(name_upper, desc_upper):
             return True
         return False
+
+    @staticmethod
+    def _pattern_in_description(pattern: str, desc_upper: str) -> bool:
+        if pattern not in desc_upper:
+            return False
+        if len(pattern) >= 6:
+            return True
+        # Short tokens must sit on UPI path boundaries (avoids "32" in ref numbers)
+        return bool(
+            re.search(
+                rf"(?:^|[\s/]){re.escape(pattern)}(?:[\s/]|$)",
+                desc_upper,
+            )
+        )
 
 
 class PayeeStore:
