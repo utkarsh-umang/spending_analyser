@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import os
+import re
+import time
 from datetime import datetime, timezone
 from typing import Any
 
@@ -29,6 +31,13 @@ def hitl_agent_enabled() -> bool:
 
 def confidence_threshold() -> float:
     return float(os.getenv("HITL_AGENT_CONFIDENCE_THRESHOLD", "0.75"))
+
+
+def _rate_limit_wait_seconds(error_message: str) -> float:
+    m = re.search(r"try again in (\d+(?:\.\d+)?)\s*s", error_message, re.I)
+    if m:
+        return float(m.group(1)) + 1.0
+    return float(os.getenv("HITL_AGENT_RATE_LIMIT_WAIT", "21"))
 
 
 def _tool_handler(name: str, args: dict[str, Any]) -> str:
@@ -127,25 +136,71 @@ def run_hitl_agent(
         return [], list(uncertain)
 
     threshold = confidence_threshold()
-    console.print(
-        f"[cyan]Classification agent[/cyan] reviewing {len(uncertain)} transaction(s) "
-        f"(auto-accept at ≥{threshold:.0%} confidence)..."
-    )
 
     resolved: list[ClassifiedTransaction] = []
     still_uncertain: list[UncertainTransaction] = []
+    agent_queue: list[UncertainTransaction] = []
 
-    for i, tx in enumerate(uncertain, 1):
+    for tx in uncertain:
+        allowed = categories.categories_for_type(tx.type, account_kind)
+        payee_hit = payee_store.match(tx.description, tx.type, allowed)
+        if payee_hit:
+            resolved.append(
+                ClassifiedTransaction(
+                    date=tx.date,
+                    description=tx.description,
+                    amount=tx.amount,
+                    type=tx.type,
+                    category=payee_hit.category,
+                    confidence="payee",
+                )
+            )
+            mr.upsert_rule(
+                conn,
+                mr.pattern_from_description(tx.description),
+                payee_hit.category,
+                "payee",
+            )
+        else:
+            agent_queue.append(tx)
+
+    if resolved:
         console.print(
-            f"  [dim]({i}/{len(uncertain)})[/dim] {tx.date} ₹{tx.amount:,.0f} — "
+            f"[cyan]Payee memory[/cyan] resolved {len(resolved)} without AI"
+        )
+    if not agent_queue:
+        return resolved, still_uncertain
+
+    console.print(
+        f"[cyan]Classification agent[/cyan] reviewing {len(agent_queue)} transaction(s) "
+        f"(auto-accept at ≥{threshold:.0%} confidence)..."
+    )
+
+    for i, tx in enumerate(agent_queue, 1):
+        console.print(
+            f"  [dim]({i}/{len(agent_queue)})[/dim] {tx.date} ₹{tx.amount:,.0f} — "
             f"{tx.description[:50]}{'…' if len(tx.description) > 50 else ''}"
         )
         try:
             output = _classify_one(tx, categories, account_kind, account_id)
         except Exception as e:
-            console.print(f"    [red]Agent error:[/red] {e}")
-            still_uncertain.append(tx)
-            continue
+            err = str(e)
+            if "rate_limit" in err or "429" in err:
+                wait = _rate_limit_wait_seconds(err)
+                console.print(
+                    f"    [yellow]Rate limited — waiting {wait:.0f}s…[/yellow]"
+                )
+                time.sleep(wait)
+                try:
+                    output = _classify_one(tx, categories, account_kind, account_id)
+                except Exception as retry_err:
+                    console.print(f"    [red]Agent error:[/red] {retry_err}")
+                    still_uncertain.append(tx)
+                    continue
+            else:
+                console.print(f"    [red]Agent error:[/red] {e}")
+                still_uncertain.append(tx)
+                continue
 
         if output is None:
             console.print("    [yellow]No classification submitted → human review[/yellow]")

@@ -77,18 +77,26 @@ class PayeeStore:
             )
         return entries
 
+    def find_matches(self, description: str) -> list[PayeeEntry]:
+        return [e for e in self._entries if e.matches(description)]
+
     def match(
         self,
         description: str,
         tx_type: TransactionType,
         valid_categories: list[str],
     ) -> PayeeEntry | None:
-        for entry in self._entries:
-            if entry.category not in valid_categories:
-                continue
-            if entry.matches(description):
-                return entry
-        return None
+        """Return best payee match; prefer valid category, then longest pattern."""
+        matches = self.find_matches(description)
+        if not matches:
+            return None
+
+        def best_key(entry: PayeeEntry) -> tuple[int, int]:
+            valid = 1 if entry.category in valid_categories else 0
+            longest = max((len(p) for p in entry.patterns), default=len(entry.name))
+            return (valid, longest)
+
+        return max(matches, key=best_key)
 
     def add_or_update(
         self,

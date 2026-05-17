@@ -177,6 +177,18 @@
       "notes": "utkarsh",
       "source": "user",
       "updated_at": "2026-05-17T18:56:10.666426+00:00"
+    },
+    {
+      "name": "SAVANA",
+      "patterns": [
+        "SAVANA",
+        "UPI/SAVANA5.PAYU@AX/RRRPPPL22912639/AXIS"
+      ],
+      "relation": "business",
+      "category": "Refunds",
+      "notes": "savana club",
+      "source": "user",
+      "updated_at": "2026-05-17T19:21:44.931774+00:00"
     }
   ]
 }

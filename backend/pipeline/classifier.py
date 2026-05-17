@@ -127,6 +127,9 @@ class Classifier:
     def _should_force_hitl(self, tx: RawTransaction) -> bool:
         if match_upi_amount_rule(tx, self.categories):
             return False
+        allowed = self.categories.categories_for_type(tx.type, self.account_kind)
+        if self.payees.match(tx.description, tx.type, allowed):
+            return False
         if tx.type == TransactionType.EXPENSE and is_likely_p2p_transfer(tx.description):
             return True
         if tx.type == TransactionType.INCOME and self.account_kind == "credit_card":

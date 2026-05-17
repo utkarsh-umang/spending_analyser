@@ -1,10 +1,7 @@
 description: Categories added during HITL — merged with categories.yaml
 expense_categories: []
 income_categories:
-- Family Transfer
 - Splitwise Settlements
 category_flags:
-  Family Transfer:
-    counts_as_income: true
   Splitwise Settlements:
     counts_as_income: false
