@@ -166,6 +166,84 @@
       "notes": "father",
       "source": "user",
       "updated_at": "2026-05-17T19:59:09.782178+00:00"
+    },
+    {
+      "name": "Bharat",
+      "patterns": [
+        "BHARAT",
+        "DEP TFR UPI/CR/215112864263/BHARAT /SBIN",
+        "DEP TFR UPI/CR/222659494513/BHARAT /SBIN",
+        "DEP TFR UPI/CR/224785899712/BHARAT /SBIN",
+        "DEP TFR UPI/CR/225122605472/BHARAT /SBIN",
+        "DEP TFR UPI/CR/225593661280/BHARAT /SBIN",
+        "DEP TFR UPI/CR/225823139840/BHARAT /SBIN",
+        "DEP TFR UPI/CR/226433842204/BHARAT /SBIN",
+        "DEP TFR UPI/CR/229209657172/BHARAT /SBIN",
+        "DEP TFR UPI/CR/234147556182/BHARAT /SBIN",
+        "DEP TFR UPI/CR/235564595560/BHARAT /SBIN",
+        "DEP TFR UPI/CR/311709671955/BHARAT /SBIN"
+      ],
+      "relation": "father",
+      "category": "Family Transfer",
+      "notes": "tushar",
+      "source": "user",
+      "updated_at": "2026-05-17T21:18:15.722353+00:00"
+    },
+    {
+      "name": "Manisha",
+      "patterns": [
+        "DEP TFR UPI/CR/216717293267/MANISHA /SBI",
+        "DEP TFR UPI/CR/216717325099/MANISHA /SBI",
+        "MANISHA"
+      ],
+      "relation": "mother",
+      "category": "Family Transfer",
+      "notes": "manisha",
+      "source": "user",
+      "updated_at": "2026-05-17T21:11:32.433803+00:00"
+    },
+    {
+      "name": "SIDDHI",
+      "patterns": [
+        "SIDDHI",
+        "DEP TFR UPI/CR/305847630193/SIDDHI /SBIN"
+      ],
+      "relation": "sister",
+      "category": "Family Transfer",
+      "notes": "siddhi",
+      "source": "user",
+      "updated_at": "2026-05-17T21:17:05.037371+00:00"
+    },
+    {
+      "name": "SHREE MA",
+      "patterns": [
+        "DEP TFR IMPS/523001019543/PNB-XX744-SHRE",
+        "DEP TFR IMPS/605216889991/PNB-XX744-SHRE",
+        "SHREE MA"
+      ],
+      "relation": "mother",
+      "category": "Family Transfer",
+      "notes": "manisha",
+      "source": "user",
+      "updated_at": "2026-05-17T21:42:33.060095+00:00"
+    },
+    {
+      "name": "Paresh D",
+      "patterns": [
+        "DEP TFR UPI/CR/040101037263/PARESH D/PUN",
+        "DEP TFR UPI/CR/093220540363/PARESH D/PUN",
+        "DEP TFR UPI/CR/272515060046/PARESH D/PUN",
+        "DEP TFR UPI/CR/320149528759/PARESH D/PUN",
+        "DEP TFR UPI/CR/326372083608/PARESH D/PUN",
+        "DEP TFR UPI/CR/393173086603/PARESH D/PUN",
+        "DEP TFR UPI/CR/972832362058/PARESH D/PUN",
+        "PARESH D"
+      ],
+      "relation": "mother",
+      "category": "Family Transfer",
+      "notes": "manisha",
+      "source": "user",
+      "updated_at": "2026-05-17T21:42:41.304859+00:00"
     }
   ]
 }

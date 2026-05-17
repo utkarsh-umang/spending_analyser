@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import json
 import os
-import re
-import time
 from datetime import datetime, timezone
 from typing import Any
 
@@ -31,13 +29,6 @@ def hitl_agent_enabled() -> bool:
 
 def confidence_threshold() -> float:
     return float(os.getenv("HITL_AGENT_CONFIDENCE_THRESHOLD", "0.75"))
-
-
-def _rate_limit_wait_seconds(error_message: str) -> float:
-    m = re.search(r"try again in (\d+(?:\.\d+)?)\s*s", error_message, re.I)
-    if m:
-        return float(m.group(1)) + 1.0
-    return float(os.getenv("HITL_AGENT_RATE_LIMIT_WAIT", "21"))
 
 
 def _tool_handler(name: str, args: dict[str, Any]) -> str:
@@ -184,23 +175,9 @@ def run_hitl_agent(
         try:
             output = _classify_one(tx, categories, account_kind, account_id)
         except Exception as e:
-            err = str(e)
-            if "rate_limit" in err or "429" in err:
-                wait = _rate_limit_wait_seconds(err)
-                console.print(
-                    f"    [yellow]Rate limited — waiting {wait:.0f}s…[/yellow]"
-                )
-                time.sleep(wait)
-                try:
-                    output = _classify_one(tx, categories, account_kind, account_id)
-                except Exception as retry_err:
-                    console.print(f"    [red]Agent error:[/red] {retry_err}")
-                    still_uncertain.append(tx)
-                    continue
-            else:
-                console.print(f"    [red]Agent error:[/red] {e}")
-                still_uncertain.append(tx)
-                continue
+            console.print(f"    [red]Agent error:[/red] {e}")
+            still_uncertain.append(tx)
+            continue
 
         if output is None:
             console.print("    [yellow]No classification submitted → human review[/yellow]")

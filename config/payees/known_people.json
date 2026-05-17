@@ -357,6 +357,362 @@
       "notes": "veromoda",
       "source": "user",
       "updated_at": "2026-05-17T19:56:53.511685+00:00"
+    },
+    {
+      "name": "HENNES N",
+      "patterns": [
+        "HENNES N"
+      ],
+      "relation": "inferred",
+      "category": "Refunds",
+      "notes": "Look for 'REFU' in descriptions for potential refunds.",
+      "source": "user",
+      "updated_at": "2026-05-17T21:04:24.956920+00:00"
+    },
+    {
+      "name": "Shashank",
+      "patterns": [
+        "SHASHANK",
+        "DEP TFR UPI/CR/222744672072/SHASHANK/PUN"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "",
+      "source": "user",
+      "updated_at": "2026-05-17T21:12:36.701780+00:00"
+    },
+    {
+      "name": "SHRI GAN",
+      "patterns": [
+        "SHRI GAN",
+        "DEP TFR UPI/CR/225956451351/SHRI GAN/PUN"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "",
+      "source": "user",
+      "updated_at": "2026-05-17T21:13:37.829942+00:00"
+    },
+    {
+      "name": "Viren Ra",
+      "patterns": [
+        "VIREN RA",
+        "DEP TFR UPI/CR/226153277465/VIREN RA/SBI"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "viren",
+      "source": "user",
+      "updated_at": "2026-05-17T21:13:47.515716+00:00"
+    },
+    {
+      "name": "Kriti Ku",
+      "patterns": [
+        "KRITI KU",
+        "DEP TFR UPI/CR/231357446609/KRITI KU/HDF"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "kriti",
+      "source": "user",
+      "updated_at": "2026-05-17T21:14:37.776512+00:00"
+    },
+    {
+      "name": "Krutika",
+      "patterns": [
+        "DEP TFR UPI/CR/231522947515/KRUTIKA /HDF",
+        "DEP TFR UPI/CR/232395697249/KRUTIKA /HDF",
+        "DEP TFR UPI/CR/302351965304/KRUTIKA /HDF",
+        "KRUTIKA"
+      ],
+      "relation": "colleague",
+      "category": "Splitwise Settlements",
+      "notes": "krutika",
+      "source": "user",
+      "updated_at": "2026-05-17T21:16:19.931367+00:00"
+    },
+    {
+      "name": "Tushar S",
+      "patterns": [
+        "DEP TFR UPI/CR/300936208001/TUSHAR S/HDF",
+        "DEP TFR UPI/CR/303126526021/TUSHAR S/HDF",
+        "DEP TFR UPI/CR/308253257800/TUSHAR S/HDF",
+        "TUSHAR S"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "tushar",
+      "source": "user",
+      "updated_at": "2026-05-17T21:18:07.307189+00:00"
+    },
+    {
+      "name": "JASOJYOT",
+      "patterns": [
+        "JASOJYOT",
+        "DEP TFR UPI/CR/303877069302/JASOJYOT/HDF"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "frined",
+      "source": "user",
+      "updated_at": "2026-05-17T21:16:48.265989+00:00"
+    },
+    {
+      "name": "Ameya AJ",
+      "patterns": [
+        "AMEYA AJ",
+        "DEP TFR UPI/CR/305965842356/AMEYA AJ/SBI"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "ameya",
+      "source": "user",
+      "updated_at": "2026-05-17T21:17:16.018123+00:00"
+    },
+    {
+      "name": "Ishita J",
+      "patterns": [
+        "DEP TFR UPI/CR/342536217795/ISHITA J/ICI",
+        "DEP TFR UPI/CR/342595110629/ISHITA J/ICI",
+        "ISHITA J"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "ishita",
+      "source": "user",
+      "updated_at": "2026-05-17T21:17:35.962789+00:00"
+    },
+    {
+      "name": "Tejasvi",
+      "patterns": [
+        "DEP TFR UPI/CR/344618314939/TEJASVI /CNR",
+        "DEP TFR UPI/CR/344618341749/TEJASVI /CNR",
+        "TEJASVI"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "tejasvi",
+      "source": "user",
+      "updated_at": "2026-05-17T21:17:54.323575+00:00"
+    },
+    {
+      "name": "hnm",
+      "patterns": [
+        "HNM",
+        "DEP TFR NEFT*CITI0000002*CITIN2230641529"
+      ],
+      "relation": "business",
+      "category": "Refunds",
+      "notes": "h&m",
+      "source": "user",
+      "updated_at": "2026-05-17T21:19:00.242569+00:00"
+    },
+    {
+      "name": "idk",
+      "patterns": [
+        "DEP TFR NEFT*HDFC0000240*N34122223855606",
+        "DEP TFR RTGS UTR NO: PUNBR52026022013463",
+        "IDK"
+      ],
+      "relation": "family",
+      "category": "Family Transfer",
+      "notes": "",
+      "source": "user",
+      "updated_at": "2026-05-17T21:43:20.182596+00:00"
+    },
+    {
+      "name": "Euronet",
+      "patterns": [
+        "EURONET",
+        "EURONETG"
+      ],
+      "relation": "inferred",
+      "category": "Refunds",
+      "notes": "Look for 'euronetgp' and 'ref' in descriptions for refunds from Euronet.",
+      "source": "user",
+      "updated_at": "2026-05-17T21:21:09.870582+00:00"
+    },
+    {
+      "name": "Urbanic",
+      "patterns": [
+        "URBANIC"
+      ],
+      "relation": "inferred",
+      "category": "Refunds",
+      "notes": "Look for merchant names like URBANIC in UPI credit descriptions to flag as potential refunds.",
+      "source": "user",
+      "updated_at": "2026-05-17T21:21:34.147644+00:00"
+    },
+    {
+      "name": "Simpl",
+      "patterns": [
+        "SIMPL"
+      ],
+      "relation": "inferred",
+      "category": "Refunds",
+      "notes": "Look for 'refund' in the description and association with payment services like Simpl for refund classification.",
+      "source": "user",
+      "updated_at": "2026-05-17T21:21:54.475617+00:00"
+    },
+    {
+      "name": "Fashnear Store",
+      "patterns": [
+        "FASHNEAR STORE",
+        "FASHNEAR"
+      ],
+      "relation": "inferred",
+      "category": "Refunds",
+      "notes": "Look for 'Refu' or 'Refund' in descriptions with merchant Fashnear to identify refund transactions.",
+      "source": "user",
+      "updated_at": "2026-05-17T21:22:41.838787+00:00"
+    },
+    {
+      "name": "Shweta G",
+      "patterns": [
+        "SHWETA G",
+        "DEP TFR UPI/CR/314368903339/SHWETA G/HDF"
+      ],
+      "relation": "colleague",
+      "category": "Splitwise Settlements",
+      "notes": "shweta",
+      "source": "user",
+      "updated_at": "2026-05-17T21:27:57.766294+00:00"
+    },
+    {
+      "name": "Mrs Sumi",
+      "patterns": [
+        "MRS SUMI",
+        "DEP TFR UPI/CR/318437501029/MRS SUMI/MAH"
+      ],
+      "relation": "someone",
+      "category": "Splitwise Settlements",
+      "notes": "sumi",
+      "source": "user",
+      "updated_at": "2026-05-17T21:28:19.333938+00:00"
+    },
+    {
+      "name": "EESHAN A",
+      "patterns": [
+        "EESHAN A",
+        "DEP TFR UPI/CR/321332833003/EESHAN A/ICI"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "eeshan",
+      "source": "user",
+      "updated_at": "2026-05-17T21:28:44.598169+00:00"
+    },
+    {
+      "name": "Deepika",
+      "patterns": [
+        "DEEPIKA",
+        "DEP TFR UPI/CR/328715098465/DEEPIKA /HDF"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "deepika",
+      "source": "user",
+      "updated_at": "2026-05-17T21:29:16.216631+00:00"
+    },
+    {
+      "name": "Santhosh",
+      "patterns": [
+        "SANTHOSH",
+        "DEP TFR UPI/CR/329404950126/SANTHOSH/SIB"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "santosh",
+      "source": "user",
+      "updated_at": "2026-05-17T21:29:28.914953+00:00"
+    },
+    {
+      "name": "Sabhya K",
+      "patterns": [
+        "DEP TFR UPI/CR/402781285737/SABHYA K/FDR",
+        "DEP TFR UPI/CR/403444037138/SABHYA K/FDR",
+        "DEP TFR UPI/CR/404239640353/SABHYA K/FDR",
+        "SABHYA K"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "sabhya",
+      "source": "user",
+      "updated_at": "2026-05-17T21:31:13.193191+00:00"
+    },
+    {
+      "name": "Devansh",
+      "patterns": [
+        "DEVANSH",
+        "DEP TFR UPI/CR/406282985057/DEVANSH /HDF"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "devansh",
+      "source": "user",
+      "updated_at": "2026-05-17T21:31:23.323238+00:00"
+    },
+    {
+      "name": "Shilpi K",
+      "patterns": [
+        "SHILPI K",
+        "DEP TFR UPI/CR/410105576208/SHILPI K/ICI"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "shilpi",
+      "source": "user",
+      "updated_at": "2026-05-17T21:31:32.003673+00:00"
+    },
+    {
+      "name": "Morgan Stanley",
+      "patterns": [
+        "DEP TFR NEFT*HDFC0000240*N00824282377586",
+        "DEP TFR NEFT*HDFC0000240*N12724302159864",
+        "MORGAN STANLEY"
+      ],
+      "relation": "employer",
+      "category": "Other Income",
+      "notes": "",
+      "source": "user",
+      "updated_at": "2026-05-17T21:36:16.774397+00:00"
+    },
+    {
+      "name": "BOGALA G",
+      "patterns": [
+        "BOGALA G",
+        "DEP TFR UPI/CR/414587483457/BOGALA G/HDF",
+        "DEP TFR UPI/CR/420538479214/BOGALA G/HDF"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "vamsi",
+      "source": "user",
+      "updated_at": "2026-05-17T21:39:28.871750+00:00"
+    },
+    {
+      "name": "Lakshya",
+      "patterns": [
+        "LAKSHYA",
+        "DEP TFR UPI/CR/420506960369/LAKSHYA /ICI"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "lakshya",
+      "source": "user",
+      "updated_at": "2026-05-17T21:39:01.543012+00:00"
+    },
+    {
+      "name": "Sparsh",
+      "patterns": [
+        "SPARSH",
+        "DEP TFR UPI/CR/420524683514/SPARSH /KKBK"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "sparsh",
+      "source": "user",
+      "updated_at": "2026-05-17T21:39:18.351925+00:00"
     }
   ]
 }
