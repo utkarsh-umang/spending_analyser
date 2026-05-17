@@ -1,0 +1,12 @@
+{
+  "description": "Family members — UPI/transfer patterns learned here and via HITL. Edit manually or let HITL append.",
+  "members": [
+    {
+      "name": "Pranav",
+      "patterns": ["PRANAV"],
+      "relation": "brother",
+      "category": "Gifts to Family",
+      "notes": "Gifts and family transfers"
+    }
+  ]
+}

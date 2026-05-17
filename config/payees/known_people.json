@@ -1,0 +1,38 @@
+{
+  "description": "Roommates, friends, colleagues — learned via HITL. Each entry maps description patterns to a category.",
+  "people": [
+    {
+      "name": "Sowmya",
+      "patterns": [
+        "SOWMYA"
+      ],
+      "relation": "roommate",
+      "category": "Roommate and Shared Expenses",
+      "notes": "Shared rent and household expenses"
+    },
+    {
+      "name": "Credit Card Repayment",
+      "patterns": [
+        "CREDIT CARD REPAYMENT",
+        "UPI PAYMENT RECEIVED"
+      ],
+      "relation": "self",
+      "category": "Credit Card Payment",
+      "notes": "Credit card bill payment from bank — not real income.",
+      "source": "user",
+      "updated_at": "2026-05-17T12:11:44.293569+00:00"
+    },
+    {
+      "name": "Self",
+      "patterns": [
+        "REFUND AMT TRANSFER TO BANK ACC XX7776",
+        "SELF"
+      ],
+      "relation": "self",
+      "category": "Online Shopping",
+      "notes": "self",
+      "source": "user",
+      "updated_at": "2026-05-17T12:18:29.380812+00:00"
+    }
+  ]
+}

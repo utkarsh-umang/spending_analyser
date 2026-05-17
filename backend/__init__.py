@@ -1,0 +1,1 @@
+"""Spending Analyzer backend package."""

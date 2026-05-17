@@ -1,0 +1,160 @@
+# Expense (debit) and income (credit) categories — edit freely.
+# category_merchants: auto-match when description contains any keyword (case-insensitive).
+# UPI payments to people are resolved via config/payees/*.json (learned in HITL).
+
+expense_categories:
+  - Quick Commerce
+  - Online Shopping
+  - Fashion and Lifestyle
+  - Food and Dining
+  - Groceries
+  - Local Transport
+  - Travel - Flights
+  - Travel - Trains
+  - Utilities
+  - Rent
+  - Healthcare
+  - Entertainment
+  - Subscriptions
+  - Insurance
+  - Education
+  - Personal Care
+  - Gifts to Family
+  - Roommate and Shared Expenses
+  - Transfers to Known People
+  - Investments
+  - Credit Card Payment
+  - Other
+
+income_categories:
+  - Salary
+  - Refunds
+  - Cashback
+  - Interest
+  - Dividends
+  - Rental Income
+  - Credit Card Payment
+  - Internal Transfer
+  - Other Income
+
+# Credits on credit card statements — HITL/LLM use this short list first
+credit_card_income_categories:
+  - Credit Card Payment
+  - Refunds
+  - Cashback
+
+# Categories with counts_as_income: false are excluded from income/savings totals in analysis
+category_flags:
+  Credit Card Payment:
+    counts_as_income: false
+  Internal Transfer:
+    counts_as_income: false
+
+income_salary_min_amount: 10000
+
+income_merchants:
+  Credit Card Payment:
+    - payment received
+    - autopay
+    - auto pay
+    - bill payment
+    - credit card payment
+    - cc payment
+    - card payment
+    - payment thank you
+
+category_merchants:
+  Quick Commerce:
+    - blinkit
+    - zepto
+    - instamart
+    - swiggy instamart
+    - dunzo
+    - bigbasket
+  Online Shopping:
+    - amazon
+    - flipkart
+    - myntra
+    - ajio
+    - meesho
+    - snapdeal
+    - croma
+  Fashion and Lifestyle:
+    - h&m
+    - hm.com
+    - zara
+    - uniqlo
+    - pantaloons
+    - westside
+    - lifestyle
+    - shoppers stop
+    - tanishq
+    - kalyan jewellers
+    - caratlane
+  Food and Dining:
+    - swiggy
+    - zomato
+    - eatfit
+    - dominos
+    - pizza
+    - restaurant
+    - cafe
+    - starbucks
+  Groceries:
+    - dmart
+    - nature's basket
+    - reliance fresh
+    - more supermarket
+  Local Transport:
+    - uber
+    - ola
+    - rapido
+    - metro
+    - fastag
+    - fuel
+    - petrol
+    - indian oil
+  Travel - Flights:
+    - makemytrip
+    - cleartrip
+    - goibibo
+    - easemytrip
+    - yatra
+    - indigo
+    - air india
+    - spicejet
+  Travel - Trains:
+    - irctc
+  Utilities:
+    - electricity
+    - bescom
+    - gas
+    - broadband
+    - airtel
+    - jio
+    - vi recharge
+  Subscriptions:
+    - netflix
+    - spotify
+    - youtube premium
+    - hotstar
+    - amazon prime
+
+expense_rules: |
+  Merchant keyword matches (category_merchants in this file) are authoritative when they apply.
+  Quick Commerce: Blinkit, Zepto, Swiggy Instamart, Dunzo — not restaurant food orders on Swiggy/Zomato (those are Food and Dining).
+  Online Shopping: Flipkart, Amazon, and general e-commerce marketplaces.
+  Fashion and Lifestyle: H&M, Zara, clothing, fashion, jewellery stores — not Amazon/Flipkart unless clearly fashion-only merchant name.
+  Travel - Flights: MakeMyTrip, Cleartrip, Goibibo, airline names.
+  Travel - Trains: IRCTC only.
+  UPI / IMPS / NEFT to a person: if the payee is NOT in the payee memory files, always mark uncertain — never guess category for P2P transfers.
+  UPI to a business with a clear merchant name: use category_merchants rules above.
+
+income_rules: |
+  - Large employer salary/payroll credits → Salary.
+  - Merchant refunds and chargebacks → Refunds; card/UPI rewards → Cashback.
+  - Credit card bill payments (from bank to settle card) → Credit Card Payment — NOT real income.
+  - Account-to-account transfers → Internal Transfer — NOT real income.
+  - Small credits under ₹10,000 are rarely Salary — mark uncertain unless description clearly says salary/payroll.
+  - P2P credits from people: mark uncertain if payee not in payee memory.
+  - On credit card statements, a credit is almost always bill payment or refund — never Salary.
