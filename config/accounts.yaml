@@ -1,18 +1,16 @@
+# Statement folders: names containing "card" → credit card; all others → bank.
+# Override per account with kind: credit_card | bank if needed.
 statements_root: "."
 accounts:
   icici_bank:
     label: "ICICI bank"
     path: "ICICI bank"
-    kind: bank
   icici_card:
     label: "ICICI card"
     path: "ICICI card"
-    kind: credit_card
   sbi_bank:
     label: "SBI bank"
     path: "SBI bank"
-    kind: bank
   sbi_card:
     label: "SBI card"
     path: "SBI card"
-    kind: credit_card

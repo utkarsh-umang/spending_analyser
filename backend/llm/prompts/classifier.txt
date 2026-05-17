@@ -17,3 +17,6 @@ Expense categories (examples — follow the rules text for full detail):
 For income (credits):
 - Small amounts under ₹10,000 are rarely Salary — mark uncertain unless clearly payroll.
 - P2P credits from unknown payees: mark uncertain.
+- Credit card bill payments → Credit Card Payment (not Salary, not Other Income).
+- Refunds and chargebacks → Refunds.
+- On credit card statements: credits are almost always Credit Card Payment or Refunds — never Salary.

@@ -231,11 +231,18 @@ def get_logs_dir() -> Path:
     return DEFAULT_LOGS_DIR
 
 
+def _path_suggests_credit_card(*parts: str) -> bool:
+    """Folders/paths with 'card' in the name are credit card statements."""
+    return any("card" in p.lower() for p in parts if p)
+
+
 def _parse_account_kind(account_id: str, info: dict) -> AccountKind:
     explicit = info.get("kind") or info.get("account_kind")
     if explicit in ("bank", "credit_card"):
         return explicit  # type: ignore[return-value]
-    if account_id.endswith("_card") or "card" in account_id.lower():
+    path = str(info.get("path", ""))
+    label = str(info.get("label", ""))
+    if _path_suggests_credit_card(account_id, path, label):
         return "credit_card"
     return "bank"
 

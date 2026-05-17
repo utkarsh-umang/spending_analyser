@@ -4,7 +4,7 @@ import json
 
 import duckdb
 
-from backend.config import CategoriesConfig
+from backend.config import AccountKind, CategoriesConfig
 from backend.db import merchant_rules as mr
 from backend.llm.client import call_with_tool, load_prompt
 from backend.llm.schemas import CLASSIFICATION_TOOL
@@ -26,10 +26,12 @@ class Classifier:
         conn: duckdb.DuckDBPyConnection,
         categories: CategoriesConfig,
         payee_store: PayeeStore | None = None,
+        account_kind: AccountKind = "bank",
     ):
         self.conn = conn
         self.categories = categories
         self.payees = payee_store or PayeeStore()
+        self.account_kind = account_kind
 
     def classify(self, transactions: list[RawTransaction]) -> ClassificationBatchResult:
         rules = mr.fetch_all_rules(self.conn)
@@ -39,7 +41,7 @@ class Classifier:
         needs_llm: list[RawTransaction] = []
 
         for tx in transactions:
-            allowed = self.categories.categories_for_type(tx.type)
+            allowed = self.categories.categories_for_type(tx.type, self.account_kind)
             category = mr.match_rule(tx.description, rules, tx.type, self.categories)
             confidence: str = "rule"
 
@@ -49,7 +51,7 @@ class Classifier:
                     category = payee_entry.category
                     confidence = "payee"
 
-            if not category and tx.type == TransactionType.EXPENSE:
+            if not category:
                 category = match_merchant_keyword(
                     tx.description, self.categories, tx.type
                 )
@@ -57,17 +59,22 @@ class Classifier:
                     confidence = "keyword"
 
             if category:
-                classified.append(
-                    ClassifiedTransaction(
-                        date=tx.date,
-                        description=tx.description,
-                        amount=tx.amount,
-                        type=tx.type,
-                        category=category,
-                        confidence=confidence,  # type: ignore[arg-type]
+                if not self.categories.is_valid_category(
+                    category, tx.type, self.account_kind
+                ):
+                    category = None
+                else:
+                    classified.append(
+                        ClassifiedTransaction(
+                            date=tx.date,
+                            description=tx.description,
+                            amount=tx.amount,
+                            type=tx.type,
+                            category=category,
+                            confidence=confidence,  # type: ignore[arg-type]
+                        )
                     )
-                )
-                continue
+                    continue
 
             if self._should_force_hitl(tx):
                 payee = extract_payee(tx.description)
@@ -77,9 +84,9 @@ class Classifier:
                         description=tx.description,
                         amount=tx.amount,
                         type=tx.type,
-                        reason="UPI/P2P transfer — payee not in memory; needs your category",
+                        reason=self._hitl_reason(tx),
                         payee_name=payee,
-                        is_p2p=True,
+                        is_p2p=is_likely_p2p_transfer(tx.description),
                     )
                 )
                 continue
@@ -100,13 +107,28 @@ class Classifier:
 
         return ClassificationBatchResult(classified=classified, uncertain=uncertain)
 
+    def _hitl_reason(self, tx: RawTransaction) -> str:
+        if (
+            tx.type == TransactionType.INCOME
+            and self.account_kind == "credit_card"
+        ):
+            return (
+                "Credit on card statement — confirm bill payment (Credit Card Payment) "
+                "or refund/chargeback (Refunds)"
+            )
+        return "UPI/P2P transfer — payee not in memory; needs your category"
+
     def _should_force_hitl(self, tx: RawTransaction) -> bool:
         if tx.type == TransactionType.EXPENSE and is_likely_p2p_transfer(tx.description):
+            return True
+        if tx.type == TransactionType.INCOME and self.account_kind == "credit_card":
             return True
         if tx.type == TransactionType.INCOME:
             payee = extract_payee(tx.description)
             if payee and is_likely_p2p_transfer(tx.description):
-                allowed = self.categories.categories_for_type(tx.type)
+                allowed = self.categories.categories_for_type(
+                    tx.type, self.account_kind
+                )
                 if not self.payees.match(tx.description, tx.type, allowed):
                     return True
         return False
@@ -117,7 +139,7 @@ class Classifier:
         tx_type: TransactionType,
     ) -> ClassificationBatchResult:
         system = load_prompt("classifier")
-        allowed = self.categories.categories_for_type(tx_type)
+        allowed = self.categories.categories_for_type(tx_type, self.account_kind)
         tx_payload = [
             {
                 "date": t.date,
@@ -128,8 +150,14 @@ class Classifier:
             for t in transactions
         ]
         kind = "income (credit)" if tx_type == TransactionType.INCOME else "expense (debit)"
+        account_note = ""
+        if tx_type == TransactionType.INCOME and self.account_kind == "credit_card":
+            account_note = (
+                "\nThis batch is from a CREDIT CARD statement. Credits are usually "
+                "Credit Card Payment (bill pay) or Refunds — never Salary.\n"
+            )
         user_text = (
-            f"Classify these {kind} transactions.\n"
+            f"Classify these {kind} transactions.{account_note}\n"
             f"Use ONLY these categories:\n{json.dumps(allowed)}\n\n"
             f"Rules:\n{self.categories.rules_for_type(tx_type)}\n\n"
             f"Transactions:\n{json.dumps(tx_payload, indent=2)}"
@@ -163,10 +191,12 @@ class Classifier:
                 continue
 
             cat = item["category"]
-            if not self.categories.is_valid_category(cat, tx_type):
+            if not self.categories.is_valid_category(
+                cat, tx.type, self.account_kind
+            ):
                 uncertain.append(
                     self._uncertain_tx(
-                        tx, f"invalid category for {tx_type.value}: {cat}"
+                        tx, f"invalid category for {tx.type.value}: {cat}"
                     )
                 )
                 continue
@@ -182,7 +212,7 @@ class Classifier:
 
             if self._should_force_hitl(tx):
                 uncertain.append(
-                    self._uncertain_tx(tx, "P2P transfer — confirm category and payee")
+                    self._uncertain_tx(tx, self._hitl_reason(tx))
                 )
                 continue
 

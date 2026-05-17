@@ -5,7 +5,12 @@ from pathlib import Path
 import duckdb
 from rich.console import Console
 
-from backend.config import CategoriesConfig, get_db_path, load_categories_config
+from backend.config import (
+    CategoriesConfig,
+    get_db_path,
+    load_categories_config,
+    resolve_account,
+)
 from backend.db import processed_files as pf
 from backend.db.connection import get_connection
 from backend.db.schema import init_schema
@@ -64,16 +69,24 @@ def run_document(
             f"([green]{credits} credits[/green], [cyan]{debits} debits[/cyan])"
         )
 
+        account = resolve_account(account_id)
         categories: CategoriesConfig = load_categories_config()
         payee_store = PayeeStore()
-        classifier = Classifier(conn, categories, payee_store)
+        classifier = Classifier(
+            conn, categories, payee_store, account_kind=account.kind
+        )
         batch = classifier.classify(valid)
 
         uncertain_resolved = 0
         skipped = 0
         if batch.uncertain:
             resolved, skipped_rows = run_hitl(
-                conn, batch.uncertain, categories, payee_store, console
+                conn,
+                batch.uncertain,
+                categories,
+                payee_store,
+                console,
+                account_kind=account.kind,
             )
             batch.classified.extend(resolved)
             uncertain_resolved = len(resolved)

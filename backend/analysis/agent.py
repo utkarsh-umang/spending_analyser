@@ -56,16 +56,28 @@ def run_analyzer(
         if not tx_count or tx_count[0] == 0:
             return "No transactions in the database. Process statements first with `spending process`."
 
-        income_cats = ", ".join(categories.income_categories)
+        income_cats = ", ".join(categories.income_categories_for_analysis())
         expense_cats = ", ".join(categories.expense_categories)
+        excluded = categories.income_excluded_from_totals()
+        excluded_note = ", ".join(excluded) if excluded else "(none)"
+        if excluded:
+            income_filter = (
+                "WHERE type = 'income' AND category NOT IN ("
+                + ", ".join(repr(c) for c in excluded)
+                + ")"
+            )
+        else:
+            income_filter = "WHERE type = 'income'"
 
         system = load_prompt("analyzer")
         user_message = (
             f"Question: {question}\n\n"
-            f"Income categories (type='income'): {income_cats}\n"
+            f"Real income categories (count toward earnings): {income_cats}\n"
+            f"Excluded from income totals (transfers, not earnings): {excluded_note}\n"
             f"Expense categories (type='expense'): {expense_cats}\n\n"
-            "Compute all income and savings figures from transaction data. "
-            "Do not assume a fixed monthly salary."
+            "Compute income and savings using real income only (exclude transfer "
+            "categories listed above). Do not assume a fixed monthly salary.\n"
+            f"Example real-income filter: {income_filter}"
         )
 
         def tool_handler(name: str, tool_input: dict) -> dict:

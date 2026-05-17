@@ -5,7 +5,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from backend.config import CategoriesConfig
+from backend.config import AccountKind, CategoriesConfig
 from backend.db import merchant_rules as mr
 from backend.memory.payee_store import PayeeStore
 from backend.memory.upi import extract_payee, is_likely_p2p_transfer
@@ -18,6 +18,7 @@ def run_hitl(
     categories: CategoriesConfig,
     payee_store: PayeeStore | None = None,
     console: Console | None = None,
+    account_kind: AccountKind = "bank",
 ) -> tuple[list[ClassifiedTransaction], list[dict]]:
     console = console or Console()
     payees = payee_store or PayeeStore()
@@ -40,41 +41,51 @@ def run_hitl(
     console.print(Panel(summary, title="Human review", border_style="yellow"))
 
     for i, tx in enumerate(uncertain, 1):
-        cat_list = categories.categories_for_type(tx.type)
-        is_income = tx.type == TransactionType.INCOME
-        tx_label = "Credit (income)" if is_income else "Debit (expense)"
         payee = tx.payee_name or extract_payee(tx.description)
         is_p2p = tx.is_p2p or is_likely_p2p_transfer(tx.description)
-
-        table = Table(show_header=False, box=None)
-        table.add_row("Date", tx.date)
-        table.add_row("Description", tx.description)
-        table.add_row("Amount", f"₹{tx.amount:,.2f}")
-        table.add_row("Direction", tx_label)
-        if payee:
-            table.add_row("Detected payee", payee)
-        if tx.reason:
-            table.add_row("Note", tx.reason)
-        console.print(Panel(table, title=f"Transaction {i}/{len(uncertain)}"))
-
-        if is_income:
-            console.print(
-                "[bold]What type of income is this credit?[/bold]"
-            )
-        elif is_p2p and payee:
-            console.print(
-                f"[bold]UPI/transfer to {payee}[/bold] — pick category "
-                f"(you can save this payee to memory after)"
-            )
-        else:
-            console.print("[bold]Pick a category:[/bold]")
-
-        for idx, cat in enumerate(cat_list, 1):
-            console.print(f"  [{idx}] {cat}")
-        console.print("  [s] skip this transaction")
+        is_income = tx.type == TransactionType.INCOME
 
         while True:
-            choice = console.input("[bold]Your choice (number or s):[/bold] ").strip().lower()
+            cat_list = categories.categories_for_type(tx.type, account_kind)
+            tx_label = "Credit (income)" if is_income else "Debit (expense)"
+
+            table = Table(show_header=False, box=None)
+            table.add_row("Date", tx.date)
+            table.add_row("Description", tx.description)
+            table.add_row("Amount", f"₹{tx.amount:,.2f}")
+            table.add_row("Direction", tx_label)
+            if payee:
+                table.add_row("Detected payee", payee)
+            if tx.reason:
+                table.add_row("Note", tx.reason)
+            console.print(Panel(table, title=f"Transaction {i}/{len(uncertain)}"))
+
+            if is_income and account_kind == "credit_card":
+                console.print(
+                    "[bold]Credit on card — bill payment or refund?[/bold]"
+                )
+            elif is_income:
+                console.print("[bold]What type of income is this credit?[/bold]")
+            elif is_p2p and payee:
+                console.print(
+                    f"[bold]UPI/transfer to {payee}[/bold] — pick category "
+                    f"(you can save this payee to memory after)"
+                )
+            else:
+                console.print("[bold]Pick a category:[/bold]")
+
+            for idx, cat in enumerate(cat_list, 1):
+                flag = ""
+                if is_income and not categories.counts_as_income(cat):
+                    flag = " [dim](excluded from income totals)[/dim]"
+                console.print(f"  [{idx}] {cat}{flag}")
+            console.print("  [+] add a new category")
+            console.print("  [s] skip this transaction")
+
+            choice = console.input(
+                "[bold]Your choice (number, +, or s):[/bold] "
+            ).strip().lower()
+
             if choice == "s":
                 skipped.append(
                     {
@@ -86,6 +97,11 @@ def run_hitl(
                 )
                 console.print("[dim]Skipped.[/dim]")
                 break
+
+            if choice == "+":
+                _prompt_add_category(console, categories, tx.type)
+                continue
+
             try:
                 num = int(choice)
                 if 1 <= num <= len(cat_list):
@@ -125,9 +141,52 @@ def run_hitl(
                     break
                 console.print("[red]Invalid number. Try again.[/red]")
             except ValueError:
-                console.print("[red]Enter a category number or 's' to skip.[/red]")
+                console.print("[red]Enter a category number, +, or s to skip.[/red]")
+
 
     return resolved, skipped
+
+
+def _prompt_add_category(
+    console: Console,
+    categories: CategoriesConfig,
+    tx_type: TransactionType,
+) -> None:
+    kind = "income (credit)" if tx_type == TransactionType.INCOME else "expense (debit)"
+    name = console.input(f"[bold]New {kind} category name:[/bold] ").strip()
+    if not name:
+        console.print("[red]Name cannot be empty.[/red]")
+        return
+
+    counts_as_income: bool | None = None
+    if tx_type == TransactionType.INCOME:
+        default_excluded = name.lower() in (
+            "credit card payment",
+            "internal transfer",
+            "transfer",
+        )
+        hint = "y" if not default_excluded else "n"
+        ans = console.input(
+            f"[bold]Count toward total income in analysis? [Y/n] (default {hint}):[/bold] "
+        ).strip().lower()
+        if ans == "n":
+            counts_as_income = False
+        elif ans == "y":
+            counts_as_income = True
+        else:
+            counts_as_income = not default_excluded
+
+    added = categories.add_learned_category(name, tx_type, counts_as_income=counts_as_income)
+    if added:
+        console.print(
+            f"[green]Added '{name}' — available for this and future transactions.[/green]"
+        )
+        if counts_as_income is False:
+            console.print(
+                "[dim]This category is excluded from income/savings totals.[/dim]"
+            )
+    else:
+        console.print(f"[yellow]'{name}' already exists in the list.[/yellow]")
 
 
 def _maybe_remember_payee(

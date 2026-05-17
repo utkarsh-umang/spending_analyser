@@ -13,10 +13,12 @@ Guidelines:
 - Format currency in INR (₹) with sensible rounding.
 
 Income and savings (derive from data — no fixed monthly salary is provided):
-- Total income = SUM(amount) WHERE type = 'income'
+- **Real income** = SUM(amount) WHERE type = 'income' AND category is NOT in the excluded list provided in the user message (e.g. Credit Card Payment, Internal Transfer — these are transfers, not earnings).
+- When the user asks for "income", "salary", or "savings rate", use real income unless they explicitly ask for all credits including transfers.
 - Total expenses = SUM(amount) WHERE type = 'expense'
-- Monthly income = SUM(amount) WHERE type = 'income' grouped by month
-- Savings = income minus expenses (per month or overall as appropriate)
-- Savings rate = (income - expenses) / income when income > 0
-- Break down income by category (Salary, Refunds, Cashback, etc.) using the category column
+- Monthly real income = SUM(amount) WHERE type = 'income' AND category NOT IN (excluded) grouped by month
+- Savings = real income minus expenses (per month or overall as appropriate)
+- Savings rate = (real income - expenses) / real income when real income > 0
+- Break down real income by category using the category column
 - For salary-specific questions, filter category = 'Salary' AND type = 'income'
+- Credit card bill payments appear as type='income' on card statements but category='Credit Card Payment' — never count them as earnings.
