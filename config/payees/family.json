@@ -3,10 +3,40 @@
   "members": [
     {
       "name": "Pranav",
-      "patterns": ["PRANAV"],
+      "patterns": [
+        "PRANAV"
+      ],
       "relation": "brother",
       "category": "Gifts to Family",
       "notes": "Gifts and family transfers"
+    },
+    {
+      "name": "32",
+      "patterns": [
+        "32",
+        "UPI/329965165777/UPI/27PAWAR-1@OKSBI/STA"
+      ],
+      "relation": "self",
+      "category": "Internal Transfer",
+      "notes": "Transfer from one account to another",
+      "source": "user",
+      "updated_at": "2026-05-17T17:02:28.978015+00:00"
+    },
+    {
+      "name": "40",
+      "patterns": [
+        "40",
+        "UPI/401220092432/UPI/27PAWAR-1@OKSBI/STA",
+        "UPI/402165603640/UPI/27PAWAR-1@OKSBI/STA",
+        "UPI/402165629514/UPI/27PAWAR-1@OKSBI/STA",
+        "UPI/404520347007/UPI/27PAWAR-1@OKSBI/STA",
+        "UPI/404520355346/UPI/27PAWAR-1@OKSBI/STA"
+      ],
+      "relation": "self",
+      "category": "Internal Transfer",
+      "notes": "internal transfer from one account to another",
+      "source": "user",
+      "updated_at": "2026-05-17T17:03:55.918111+00:00"
     }
   ]
 }

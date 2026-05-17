@@ -6,6 +6,7 @@ from pathlib import Path
 from backend.llm.client import call_with_tool, load_prompt
 from backend.llm.schemas import EXTRACTION_TOOL
 from backend.models import RawTransaction, TransactionType
+from backend.pipeline.parsers.icici_bank_csv import is_icici_bank_csv, parse_icici_bank_csv
 from backend.pipeline.parsers.icici_card_csv import is_icici_card_csv, parse_icici_card_csv
 
 
@@ -44,6 +45,10 @@ class StatementExtractor:
 
     def _extract_csv(self, file_path: Path, system: str) -> list[dict]:
         text = file_path.read_text(encoding="utf-8", errors="replace")
+        if is_icici_bank_csv(text):
+            rows = parse_icici_bank_csv(text)
+            if rows:
+                return rows
         if is_icici_card_csv(text):
             rows = parse_icici_card_csv(text)
             if rows:
