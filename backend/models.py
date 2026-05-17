@@ -32,7 +32,7 @@ class ClassifiedTransaction(BaseModel):
     amount: float
     type: TransactionType
     category: str
-    confidence: Literal["rule", "llm", "user", "payee", "keyword"] = "llm"
+    confidence: Literal["rule", "llm", "user", "payee", "keyword", "agent"] = "llm"
 
 
 class UncertainTransaction(BaseModel):
@@ -71,6 +71,7 @@ class PipelineResult(BaseModel):
     extracted: int = 0
     rejected: int = 0
     classified: int = 0
+    agent_resolved: int = 0
     uncertain_resolved: int = 0
     skipped: int = 0
     written: int = 0

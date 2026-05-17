@@ -92,8 +92,15 @@ def process_file(
     dry_run: bool = typer.Option(False, "--dry-run", help="Extract and validate only"),
     skip_processed: bool = typer.Option(True, "--skip-processed/--no-skip-processed"),
     force: bool = typer.Option(False, "--force", help="Reprocess even if already done"),
+    no_agent: bool = typer.Option(
+        False, "--no-agent", help="Skip GPT classification agent; go straight to human HITL"
+    ),
 ) -> None:
     """Run Phase 1 pipeline on a single statement file."""
+    if no_agent:
+        import os
+
+        os.environ["HITL_AGENT_ENABLED"] = "false"
     acc = resolve_account(account)
     path = resolve_statement_path(file, acc)
     result = run_document(
@@ -115,8 +122,15 @@ def process_account(
     dry_run: bool = typer.Option(False, "--dry-run"),
     skip_processed: bool = typer.Option(True, "--skip-processed/--no-skip-processed"),
     force: bool = typer.Option(False, "--force"),
+    no_agent: bool = typer.Option(
+        False, "--no-agent", help="Skip GPT classification agent; go straight to human HITL"
+    ),
 ) -> None:
     """Process all files in an account folder, pausing between each."""
+    if no_agent:
+        import os
+
+        os.environ["HITL_AGENT_ENABLED"] = "false"
     acc = resolve_account(account)
     files = list_statement_files(acc.path)
     if not files:
@@ -179,6 +193,24 @@ def list_payees() -> None:
         console.print(table)
 
 
+@app.command("serve")
+def serve(
+    host: str = typer.Option("127.0.0.1", "--host", help="Bind address"),
+    port: int = typer.Option(8765, "--port", "-p", help="Port"),
+    reload: bool = typer.Option(False, "--reload", help="Auto-reload on code changes"),
+) -> None:
+    """Start the local web UI (status, CSV export, natural-language queries)."""
+    import uvicorn
+
+    console.print(f"[green]Web UI:[/green] http://{host}:{port}/")
+    uvicorn.run(
+        "backend.web.app:app",
+        host=host,
+        port=port,
+        reload=reload,
+    )
+
+
 @app.command("analyze")
 def analyze(
     question: str = typer.Argument(..., help="Question about your spending"),
@@ -194,7 +226,8 @@ def analyze(
 def _print_result(result) -> None:
     console.print(
         f"  Extracted: {result.extracted} | Rejected: {result.rejected} | "
-        f"Classified: {result.classified} | HITL resolved: {result.uncertain_resolved} | "
+        f"Classified: {result.classified} | "
+        f"Agent: {result.agent_resolved} | Human HITL: {result.uncertain_resolved} | "
         f"Skipped: {result.skipped} | Written: {result.written} | "
         f"Duplicates skipped: {result.duplicates_skipped}"
         + (" [dry-run]" if result.dry_run else "")

@@ -19,6 +19,7 @@ from backend.memory.payee_store import PayeeStore
 from backend.pipeline.classifier import Classifier
 from backend.pipeline.extractor import StatementExtractor
 from backend.pipeline.hitl import run_hitl
+from backend.pipeline.hitl_agent import hitl_agent_enabled, run_hitl_agent
 from backend.pipeline.processor import TransactionProcessor
 from backend.pipeline.validator import validate_rows
 from backend.utils.files import sha256_file
@@ -77,12 +78,33 @@ def run_document(
         )
         batch = classifier.classify(valid)
 
+        agent_resolved = 0
         uncertain_resolved = 0
         skipped = 0
-        if batch.uncertain:
+        remaining_uncertain = batch.uncertain
+
+        if remaining_uncertain and hitl_agent_enabled():
+            agent_done, remaining_uncertain = run_hitl_agent(
+                conn,
+                remaining_uncertain,
+                categories,
+                payee_store,
+                account_kind=account.kind,
+                account_id=account_id,
+                console=console,
+            )
+            batch.classified.extend(agent_done)
+            agent_resolved = len(agent_done)
+        elif remaining_uncertain and not hitl_agent_enabled():
+            console.print(
+                "[dim]Classification agent skipped "
+                "(set OPENAI_API_KEY or HITL_AGENT_ENABLED=true)[/dim]"
+            )
+
+        if remaining_uncertain:
             resolved, skipped_rows = run_hitl(
                 conn,
-                batch.uncertain,
+                remaining_uncertain,
                 categories,
                 payee_store,
                 console,
@@ -119,6 +141,7 @@ def run_document(
             extracted=len(raw_rows),
             rejected=len(rejected),
             classified=len(batch.classified),
+            agent_resolved=agent_resolved,
             uncertain_resolved=uncertain_resolved,
             skipped=skipped,
             written=written,

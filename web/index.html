@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Spending Analyzer</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div>
+        <h1>Spending Analyzer</h1>
+        <p class="subtitle">Local dashboard — statement status, export, and natural-language queries</p>
+      </div>
+      <div class="header-actions">
+        <button type="button" id="refresh-btn" class="btn btn-secondary">Refresh</button>
+        <a id="export-btn" class="btn btn-primary" href="/api/export/transactions.csv" download>Download transactions CSV</a>
+      </div>
+    </header>
+
+    <section class="stats" id="stats" aria-live="polite">
+      <div class="stat-card">
+        <span class="stat-label">Transactions</span>
+        <span class="stat-value" id="stat-tx">—</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Processed files</span>
+        <span class="stat-value stat-ok" id="stat-processed">—</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Pending files</span>
+        <span class="stat-value stat-warn" id="stat-pending">—</span>
+      </div>
+      <div class="stat-card stat-wide">
+        <span class="stat-label">Database</span>
+        <span class="stat-value stat-mono" id="stat-db">—</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Statement files</h2>
+      <p class="hint">Process files from the CLI with <code>python spending.py process-account &lt;id&gt;</code>. Status updates after each successful run.</p>
+      <div id="accounts-loading" class="loading">Loading…</div>
+      <div id="accounts-error" class="error hidden" role="alert"></div>
+      <div id="accounts"></div>
+    </section>
+
+    <section class="panel panel-analyze">
+      <h2>Ask about your spending</h2>
+      <p class="hint">Uses the same analyzer as <code>python spending.py analyze "…"</code>. Answers are generated from your DuckDB data.</p>
+      <form id="analyze-form">
+        <label class="sr-only" for="question">Question</label>
+        <textarea
+          id="question"
+          name="question"
+          rows="3"
+          placeholder="e.g. What were my top 5 expense categories in 2024?"
+          required
+        ></textarea>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="analyze-btn">Ask</button>
+        </div>
+      </form>
+      <div id="analyze-loading" class="loading hidden">Analyzing… this may take a moment.</div>
+      <div id="analyze-error" class="error hidden" role="alert"></div>
+      <article id="analyze-result" class="result hidden" aria-live="polite"></article>
+    </section>
+  </div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
