@@ -73,3 +73,49 @@ FINAL_ANSWER_TOOL = {
         "required": ["answer"],
     },
 }
+
+PROPOSE_CORRECTION_TOOL = {
+    "name": "propose_correction",
+    "description": "Propose a category/type fix for specific transaction row(s) after searching the database.",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "status": {
+                "type": "string",
+                "enum": ["ready", "ambiguous", "not_found", "not_a_correction"],
+            },
+            "message": {
+                "type": "string",
+                "description": "Short explanation for the user",
+            },
+            "transaction_ids": {
+                "type": "array",
+                "items": {"type": "integer"},
+                "description": "Database ids to update (one or more candidates)",
+            },
+            "new_category": {"type": ["string", "null"]},
+            "new_type": {
+                "type": ["string", "null"],
+                "enum": ["expense", "income", None],
+            },
+            "merchant_patterns": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Description substrings for merchant_rules",
+            },
+            "save_payee": {
+                "type": ["object", "null"],
+                "properties": {
+                    "name": {"type": "string"},
+                    "group": {"type": "string", "enum": ["known", "family"]},
+                    "relation": {"type": "string"},
+                    "extra_patterns": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                    },
+                },
+            },
+        },
+        "required": ["status", "message", "transaction_ids"],
+    },
+}

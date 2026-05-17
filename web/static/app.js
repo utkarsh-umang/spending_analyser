@@ -4,6 +4,11 @@ let currentView = "overview";
 let currentTable = "transactions";
 let tableOffset = 0;
 let tableTotal = 0;
+let pendingCorrection = null;
+
+const FIX_PLACEHOLDER =
+  "Move the Zepto ₹464 transaction from Groceries to Quick Commerce";
+const ASK_PLACEHOLDER = "What were my top expense categories in 2024?";
 
 function $(id) {
   return document.getElementById(id);
@@ -255,6 +260,170 @@ function updatePager(data) {
   $("pager-next").disabled = data.offset + data.rows.length >= data.total;
 }
 
+function getQueryMode() {
+  const selected = document.querySelector('input[name="query-mode"]:checked');
+  return selected ? selected.value : "ask";
+}
+
+function updateQueryModeUi() {
+  const mode = getQueryMode();
+  const btn = $("analyze-btn");
+  const textarea = $("question");
+  if (mode === "fix") {
+    btn.textContent = "Find transaction";
+    textarea.placeholder = FIX_PLACEHOLDER;
+  } else {
+    btn.textContent = "Ask";
+    textarea.placeholder = ASK_PLACEHOLDER;
+  }
+  hideCorrectionConfirm();
+}
+
+function hideCorrectionConfirm() {
+  pendingCorrection = null;
+  hide($("correction-confirm"));
+}
+
+function formatRupee(amount) {
+  return `₹${Number(amount).toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+function showCorrectionPlan(plan) {
+  pendingCorrection = plan;
+  hide($("analyze-result"));
+  hide($("analyze-error"));
+
+  const panel = $("correction-confirm");
+  const msg = $("correction-message");
+  const list = $("correction-candidates");
+  const change = $("correction-change");
+  const applyBtn = $("correction-apply-btn");
+
+  msg.textContent = plan.message || "";
+
+  if (plan.status === "not_a_correction") {
+    change.textContent =
+      "This looks like an analytics question — switch to Analyze mode, or rephrase as a fix request.";
+    list.innerHTML = "";
+    applyBtn.disabled = true;
+    show(panel);
+    return;
+  }
+
+  if (!plan.transactions || !plan.transactions.length) {
+    change.textContent = plan.errors?.length
+      ? plan.errors.join(" ")
+      : "No matching transactions found.";
+    list.innerHTML = "";
+    applyBtn.disabled = true;
+    show(panel);
+    return;
+  }
+
+  const newCat = plan.new_category || "?";
+  change.innerHTML = `Change category → <strong>${escapeHtml(newCat)}</strong>`;
+  if (plan.merchant_patterns?.length) {
+    change.innerHTML += `<br /><span class="correction-candidate-meta">Future patterns: ${escapeHtml(
+      plan.merchant_patterns.join(", ")
+    )}</span>`;
+  }
+
+  list.innerHTML = "";
+  const defaultChecked = plan.status === "ready";
+  for (const tx of plan.transactions) {
+    const li = document.createElement("li");
+    li.className = "correction-candidate";
+    li.innerHTML = `
+      <input type="checkbox" class="correction-pick" data-id="${tx.id}" ${
+        defaultChecked || plan.transactions.length === 1 ? "checked" : ""
+      } />
+      <div>
+        <div><strong>${escapeHtml(String(tx.date))}</strong> · ${formatRupee(tx.amount)} · ${escapeHtml(tx.category)}</div>
+        <div class="correction-candidate-meta">${escapeHtml(truncate(tx.description, 42))}</div>
+      </div>
+    `;
+    list.appendChild(li);
+  }
+
+  applyBtn.disabled = !plan.can_apply;
+  show(panel);
+}
+
+async function planCorrection(request) {
+  const res = await fetch("/api/corrections/plan", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ request }),
+  });
+  const body = await res.json();
+  if (!res.ok) {
+    const detail = body.detail;
+    throw new Error(
+      typeof detail === "string" ? detail : res.statusText
+    );
+  }
+  return body;
+}
+
+async function applyCorrection() {
+  if (!pendingCorrection) return;
+
+  const ids = [...document.querySelectorAll(".correction-pick:checked")].map((el) =>
+    parseInt(el.dataset.id, 10)
+  );
+  if (!ids.length) {
+    $("analyze-error").textContent = "Select at least one transaction.";
+    show($("analyze-error"));
+    return;
+  }
+
+  const payload = {
+    transaction_ids: ids,
+    new_category: pendingCorrection.new_category,
+    new_type: pendingCorrection.new_type || null,
+    merchant_patterns: pendingCorrection.merchant_patterns || [],
+    save_payee: pendingCorrection.save_payee || null,
+  };
+
+  const applyBtn = $("correction-apply-btn");
+  applyBtn.disabled = true;
+
+  try {
+    const res = await fetch("/api/corrections/apply", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const body = await res.json();
+    if (!res.ok) {
+      const detail = body.detail;
+      throw new Error(
+        typeof detail === "string" ? detail : res.statusText
+      );
+    }
+
+    hideCorrectionConfirm();
+    const result = $("analyze-result");
+    result.textContent = `Updated ${body.updated_count} transaction(s) to "${body.new_category}".`;
+    if (body.merchant_patterns_saved) {
+      result.textContent += ` Saved ${body.merchant_patterns_saved} merchant pattern(s) for future runs.`;
+    }
+    if (body.payee_saved) {
+      result.textContent += ` Remembered payee: ${body.payee_saved}.`;
+    }
+    show(result);
+    loadStatus();
+  } catch (e) {
+    $("analyze-error").textContent = `Could not apply: ${e.message}`;
+    show($("analyze-error"));
+  } finally {
+    applyBtn.disabled = false;
+  }
+}
+
 async function submitQuestion(event) {
   event.preventDefault();
   const question = $("question").value.trim();
@@ -264,30 +433,38 @@ async function submitQuestion(event) {
   const loading = $("analyze-loading");
   const errEl = $("analyze-error");
   const result = $("analyze-result");
+  const mode = getQueryMode();
 
   hide(errEl);
   hide(result);
+  hideCorrectionConfirm();
   show(loading);
   btn.disabled = true;
 
   try {
-    const res = await fetch("/api/analyze", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question }),
-    });
-    const body = await res.json();
-    if (!res.ok) {
-      const detail = body.detail;
-      const msg = Array.isArray(detail)
-        ? detail.map((d) => d.msg || String(d)).join("; ")
-        : detail || res.statusText;
-      throw new Error(msg);
+    if (mode === "fix") {
+      const plan = await planCorrection(question);
+      showCorrectionPlan(plan);
+    } else {
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        const detail = body.detail;
+        const msg = Array.isArray(detail)
+          ? detail.map((d) => d.msg || String(d)).join("; ")
+          : detail || res.statusText;
+        throw new Error(msg);
+      }
+      result.textContent = body.answer;
+      show(result);
     }
-    result.textContent = body.answer;
-    show(result);
   } catch (e) {
-    errEl.textContent = `Analysis failed: ${e.message}`;
+    errEl.textContent =
+      mode === "fix" ? `Could not plan fix: ${e.message}` : `Analysis failed: ${e.message}`;
     show(errEl);
   } finally {
     hide(loading);
@@ -318,4 +495,12 @@ $("pager-next").addEventListener("click", () => {
 
 $("analyze-form").addEventListener("submit", submitQuestion);
 
+document.querySelectorAll('input[name="query-mode"]').forEach((el) => {
+  el.addEventListener("change", updateQueryModeUi);
+});
+
+$("correction-apply-btn").addEventListener("click", applyCorrection);
+$("correction-cancel-btn").addEventListener("click", hideCorrectionConfirm);
+
+updateQueryModeUi();
 loadStatus();

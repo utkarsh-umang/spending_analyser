@@ -9,6 +9,8 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from backend.analysis.agent import run_analyzer
+from backend.analysis.correction_agent import plan_correction
+from backend.analysis.corrections import apply_correction
 from backend.config import get_db_path
 from backend.web.service import (
     TABLE_META,
@@ -33,6 +35,25 @@ class AnalyzeRequest(BaseModel):
 
 class AnalyzeResponse(BaseModel):
     answer: str
+
+
+class CorrectionPlanRequest(BaseModel):
+    request: str = Field(..., min_length=1, max_length=4000)
+
+
+class SavePayeeModel(BaseModel):
+    name: str
+    group: str = "known"
+    relation: str = "merchant"
+    extra_patterns: list[str] = Field(default_factory=list)
+
+
+class CorrectionApplyRequest(BaseModel):
+    transaction_ids: list[int] = Field(..., min_length=1)
+    new_category: str = Field(..., min_length=1)
+    new_type: str | None = None
+    merchant_patterns: list[str] = Field(default_factory=list)
+    save_payee: SavePayeeModel | None = None
 
 
 def _db_locked_response(exc: duckdb.IOException) -> HTTPException:
@@ -102,6 +123,40 @@ def api_table_data(
         if "lock" in str(e).lower():
             raise _db_locked_response(e) from e
         raise
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+
+
+@app.post("/api/corrections/plan")
+def api_correction_plan(body: CorrectionPlanRequest) -> dict:
+    try:
+        return plan_correction(body.request.strip(), db_path=get_db_path(None))
+    except duckdb.IOException as e:
+        if "lock" in str(e).lower():
+            raise _db_locked_response(e) from e
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@app.post("/api/corrections/apply")
+def api_correction_apply(body: CorrectionApplyRequest) -> dict:
+    try:
+        save_payee = body.save_payee.model_dump() if body.save_payee else None
+        return apply_correction(
+            transaction_ids=body.transaction_ids,
+            new_category=body.new_category.strip(),
+            new_type=body.new_type,
+            merchant_patterns=body.merchant_patterns,
+            save_payee=save_payee,
+            db_path=get_db_path(None),
+        )
+    except duckdb.IOException as e:
+        if "lock" in str(e).lower():
+            raise _db_locked_response(e) from e
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
 

@@ -138,6 +138,31 @@
       "notes": "Father — UPI to bharatpawarhbl / Bharat Pawar",
       "source": "user",
       "updated_at": "2026-05-17T20:00:00.000000+00:00"
+    },
+    {
+      "name": "Shivani PA",
+      "patterns": [
+        "SHIVANI PA",
+        "MMT/IMPS/536522608331/TRANSFER TO FAM/SH"
+      ],
+      "relation": "self",
+      "category": "Other Income",
+      "notes": "internal transfer",
+      "source": "user",
+      "updated_at": "2026-05-17T19:55:04.924163+00:00"
+    },
+    {
+      "name": "BHARAT SO",
+      "patterns": [
+        "BHARAT SO",
+        "UPI/BHARAT SO/7974397712@AXL/PAYMENT FR/",
+        "UPI/BHARAT SO/7974397712@YBL/PAYMENT FR/"
+      ],
+      "relation": "father",
+      "category": "Other Income",
+      "notes": "father",
+      "source": "user",
+      "updated_at": "2026-05-17T19:59:09.782178+00:00"
     }
   ]
 }

@@ -43,7 +43,19 @@
       </section>
 
       <section class="panel query-panel">
-        <h2>Ask about your spending</h2>
+        <div class="panel-head">
+          <h2>Ask or fix</h2>
+          <div class="query-mode" role="radiogroup" aria-label="Query mode">
+            <label class="mode-option">
+              <input type="radio" name="query-mode" value="ask" checked />
+              Analyze
+            </label>
+            <label class="mode-option">
+              <input type="radio" name="query-mode" value="fix" />
+              Fix transaction
+            </label>
+          </div>
+        </div>
         <form id="analyze-form" class="analyze-form">
           <label class="sr-only" for="question">Question</label>
           <textarea
@@ -58,6 +70,15 @@
         <div id="analyze-loading" class="loading hidden">Analyzing…</div>
         <div id="analyze-error" class="error hidden" role="alert"></div>
         <article id="analyze-result" class="result hidden" aria-live="polite"></article>
+        <section id="correction-confirm" class="correction-confirm hidden" aria-live="polite">
+          <p id="correction-message" class="correction-message"></p>
+          <ul id="correction-candidates" class="correction-candidates"></ul>
+          <p id="correction-change" class="correction-change"></p>
+          <div class="correction-actions">
+            <button type="button" id="correction-apply-btn" class="btn btn-primary">Confirm change</button>
+            <button type="button" id="correction-cancel-btn" class="btn btn-secondary">Cancel</button>
+          </div>
+        </section>
       </section>
     </main>
 

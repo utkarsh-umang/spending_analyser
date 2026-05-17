@@ -189,6 +189,138 @@
       "notes": "savana club",
       "source": "user",
       "updated_at": "2026-05-17T19:21:44.931774+00:00"
+    },
+    {
+      "name": "IRCTC",
+      "patterns": [
+        "IRCTC"
+      ],
+      "relation": "inferred",
+      "category": "Refunds",
+      "notes": "Look for 'IRCTC' and 'UPI Refund' in the description to classify as Refunds.",
+      "source": "user",
+      "updated_at": "2026-05-17T19:38:40.011752+00:00"
+    },
+    {
+      "name": "Shivani PA",
+      "patterns": [
+        "LOAN REPAYMENT",
+        "SHIVANI PA"
+      ],
+      "relation": "inferred",
+      "category": "Other Income",
+      "notes": "Look for 'Loan Repayment' in description for similar P2P credits.",
+      "source": "user",
+      "updated_at": "2026-05-17T19:46:21.145315+00:00"
+    },
+    {
+      "name": "AutoPe",
+      "patterns": [
+        "AUTOPE",
+        "RFNDAUTOPE"
+      ],
+      "relation": "inferred",
+      "category": "Refunds",
+      "notes": "Look for 'RFND' in descriptions for refund transactions.",
+      "source": "user",
+      "updated_at": "2026-05-17T19:49:59.518943+00:00"
+    },
+    {
+      "name": "Shikha",
+      "patterns": [
+        "SHIKHA",
+        "UPI/SHIKHA7ARTICUNO/UPI/STATE BANK OF I/"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "shikha",
+      "source": "user",
+      "updated_at": "2026-05-17T19:52:20.768956+00:00"
+    },
+    {
+      "name": "IRCTC CF",
+      "patterns": [
+        "IRCTC CF",
+        "UPI/IRCTC CF/IRCTC.CF@HDFCB/UPI REFUND/H"
+      ],
+      "relation": "IRCTC",
+      "category": "Refunds",
+      "notes": "irctc refund",
+      "source": "user",
+      "updated_at": "2026-05-17T19:52:40.000714+00:00"
+    },
+    {
+      "name": "Shikha Muk",
+      "patterns": [
+        "SHIKHA MUK",
+        "UPI/SHIKHA MUK/SHIKHA7ARTICUN/RENT/STATE"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "shikha",
+      "source": "user",
+      "updated_at": "2026-05-17T19:53:14.807038+00:00"
+    },
+    {
+      "name": "NANDITA MA",
+      "patterns": [
+        "NANDITA MA",
+        "UPI/NANDITA MA/NANDITAMATHUR1/NOVDEC REN"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "nandita",
+      "source": "user",
+      "updated_at": "2026-05-17T19:53:29.522174+00:00"
+    },
+    {
+      "name": "KRUTIKA TA",
+      "patterns": [
+        "KRUTIKA TA",
+        "UPI/KRUTIKA TA/8839468934@YBL/PAYMENT FR"
+      ],
+      "relation": "colleague",
+      "category": "Splitwise Settlements",
+      "notes": "krutika",
+      "source": "user",
+      "updated_at": "2026-05-17T19:53:45.654874+00:00"
+    },
+    {
+      "name": "Shambhavi",
+      "patterns": [
+        "SHAMBHAVI",
+        "UPI/SHAMBHAVI/GEETASHUB-1@OK/UPI/STATE B"
+      ],
+      "relation": "friend",
+      "category": "Splitwise Settlements",
+      "notes": "shambhavi og",
+      "source": "user",
+      "updated_at": "2026-05-17T19:55:47.852452+00:00"
+    },
+    {
+      "name": "LOAN REPAYMENT",
+      "patterns": [
+        "LOAN REPAYMENT",
+        "MMT/IMPS/602022994592/LOAN REPAYMENT/SHI",
+        "MMT/IMPS/604707541205/LOAN REPAYMENT/SHI"
+      ],
+      "relation": "loan repayment",
+      "category": "Internal Transfer",
+      "notes": "loan repayment",
+      "source": "user",
+      "updated_at": "2026-05-17T19:58:18.379089+00:00"
+    },
+    {
+      "name": "VERO MODA",
+      "patterns": [
+        "VERO MODA",
+        "UPI/VERO MODA/VEROMODARETAIL/REFUND FOR/"
+      ],
+      "relation": "online shop",
+      "category": "Refunds",
+      "notes": "veromoda",
+      "source": "user",
+      "updated_at": "2026-05-17T19:56:53.511685+00:00"
     }
   ]
 }
