@@ -12,6 +12,24 @@ from backend.memory.upi import extract_payee, is_likely_p2p_transfer
 from backend.models import ClassifiedTransaction, TransactionType, UncertainTransaction
 
 
+def _print_interrupt_summary(
+    console: Console,
+    conn: duckdb.DuckDBPyConnection,
+    resolved: list[ClassifiedTransaction],
+) -> None:
+    user_rules = conn.execute(
+        "SELECT COUNT(*) FROM merchant_rules WHERE source = 'user'"
+    ).fetchone()[0]
+    console.print(
+        f"\n[yellow]Interrupted.[/yellow] Saved in this session:\n"
+        f"  • [green]{len(resolved)}[/green] classification(s) → merchant_rules (DuckDB)\n"
+        f"  • Payee entries you confirmed → config/payees/*.json\n"
+        f"  • Total user merchant_rules in DB: {user_rules}\n"
+        f"[dim]Resolved transactions will be written to the DB on exit "
+        f"(if the pipeline saves partial progress).[/dim]"
+    )
+
+
 def run_hitl(
     conn: duckdb.DuckDBPyConnection,
     uncertain: list[UncertainTransaction],
@@ -19,14 +37,14 @@ def run_hitl(
     payee_store: PayeeStore | None = None,
     console: Console | None = None,
     account_kind: AccountKind = "bank",
-) -> tuple[list[ClassifiedTransaction], list[dict]]:
+) -> tuple[list[ClassifiedTransaction], list[dict], bool]:
     console = console or Console()
     payees = payee_store or PayeeStore()
     resolved: list[ClassifiedTransaction] = []
     skipped: list[dict] = []
 
     if not uncertain:
-        return resolved, skipped
+        return resolved, skipped, False
 
     income_count = sum(1 for t in uncertain if t.type == TransactionType.INCOME)
     expense_count = len(uncertain) - income_count
@@ -41,110 +59,113 @@ def run_hitl(
     console.print(Panel(summary, title="Human review", border_style="yellow"))
 
     for i, tx in enumerate(uncertain, 1):
-        payee = tx.payee_name or extract_payee(tx.description)
-        is_p2p = tx.is_p2p or is_likely_p2p_transfer(tx.description)
-        is_income = tx.type == TransactionType.INCOME
+        try:
+            payee = tx.payee_name or extract_payee(tx.description)
+            is_p2p = tx.is_p2p or is_likely_p2p_transfer(tx.description)
+            is_income = tx.type == TransactionType.INCOME
 
-        while True:
-            cat_list = categories.categories_for_type(tx.type, account_kind)
-            tx_label = "Credit (income)" if is_income else "Debit (expense)"
+            while True:
+                cat_list = categories.categories_for_type(tx.type, account_kind)
+                tx_label = "Credit (income)" if is_income else "Debit (expense)"
 
-            table = Table(show_header=False, box=None)
-            table.add_row("Date", tx.date)
-            table.add_row("Description", tx.description)
-            table.add_row("Amount", f"₹{tx.amount:,.2f}")
-            table.add_row("Direction", tx_label)
-            if payee:
-                table.add_row("Detected payee", payee)
-            if tx.reason:
-                table.add_row("Note", tx.reason)
-            console.print(Panel(table, title=f"Transaction {i}/{len(uncertain)}"))
+                table = Table(show_header=False, box=None)
+                table.add_row("Date", tx.date)
+                table.add_row("Description", tx.description)
+                table.add_row("Amount", f"₹{tx.amount:,.2f}")
+                table.add_row("Direction", tx_label)
+                if payee:
+                    table.add_row("Detected payee", payee)
+                if tx.reason:
+                    table.add_row("Note", tx.reason)
+                console.print(Panel(table, title=f"Transaction {i}/{len(uncertain)}"))
 
-            if is_income and account_kind == "credit_card":
-                console.print(
-                    "[bold]Credit on card — bill payment or refund?[/bold]"
-                )
-            elif is_income:
-                console.print("[bold]What type of income is this credit?[/bold]")
-            elif is_p2p and payee:
-                console.print(
-                    f"[bold]UPI/transfer to {payee}[/bold] — pick category "
-                    f"(you can save this payee to memory after)"
-                )
-            else:
-                console.print("[bold]Pick a category:[/bold]")
-
-            for idx, cat in enumerate(cat_list, 1):
-                flag = ""
-                if is_income and not categories.counts_as_income(cat):
-                    flag = " [dim](excluded from income totals)[/dim]"
-                console.print(f"  [{idx}] {cat}{flag}")
-            console.print("  [+] add a new category")
-            console.print("  [s] skip this transaction")
-
-            choice = console.input(
-                "[bold]Your choice (number, +, or s):[/bold] "
-            ).strip().lower()
-
-            if choice == "s":
-                skipped.append(
-                    {
-                        "date": tx.date,
-                        "description": tx.description,
-                        "amount": tx.amount,
-                        "type": tx.type.value,
-                    }
-                )
-                console.print("[dim]Skipped.[/dim]")
-                break
-
-            if choice == "+":
-                _prompt_add_category(console, categories, tx.type)
-                continue
-
-            try:
-                num = int(choice)
-                if 1 <= num <= len(cat_list):
-                    category = cat_list[num - 1]
-                    if (
-                        is_income
-                        and category == "Salary"
-                        and tx.amount < categories.income_salary_min_amount
-                    ):
-                        console.print(
-                            f"[red]Salary not allowed for credits under "
-                            f"₹{categories.income_salary_min_amount:,.0f}.[/red]"
-                        )
-                        continue
-
-                    resolved.append(
-                        ClassifiedTransaction(
-                            date=tx.date,
-                            description=tx.description,
-                            amount=tx.amount,
-                            type=tx.type,
-                            category=category,
-                            confidence="user",
-                        )
+                if is_income and account_kind == "credit_card":
+                    console.print(
+                        "[bold]Credit on card — bill payment or refund?[/bold]"
                     )
-                    mr.upsert_rule(
-                        conn,
-                        mr.pattern_from_description(tx.description),
-                        category,
-                        "user",
+                elif is_income:
+                    console.print("[bold]What type of income is this credit?[/bold]")
+                elif is_p2p and payee:
+                    console.print(
+                        f"[bold]UPI/transfer to {payee}[/bold] — pick category "
+                        f"(you can save this payee to memory after)"
                     )
-                    console.print(f"[green]Assigned: {category}[/green]")
+                else:
+                    console.print("[bold]Pick a category:[/bold]")
 
-                    _maybe_remember_payee(
-                        console, payees, payee, category, is_p2p, tx.description
+                for idx, cat in enumerate(cat_list, 1):
+                    flag = ""
+                    if is_income and not categories.counts_as_income(cat):
+                        flag = " [dim](excluded from income totals)[/dim]"
+                    console.print(f"  [{idx}] {cat}{flag}")
+                console.print("  [+] add a new category")
+                console.print("  [s] skip this transaction")
+
+                choice = console.input(
+                    "[bold]Your choice (number, +, or s):[/bold] "
+                ).strip().lower()
+
+                if choice == "s":
+                    skipped.append(
+                        {
+                            "date": tx.date,
+                            "description": tx.description,
+                            "amount": tx.amount,
+                            "type": tx.type.value,
+                        }
                     )
+                    console.print("[dim]Skipped.[/dim]")
                     break
-                console.print("[red]Invalid number. Try again.[/red]")
-            except ValueError:
-                console.print("[red]Enter a category number, +, or s to skip.[/red]")
 
+                if choice == "+":
+                    _prompt_add_category(console, categories, tx.type)
+                    continue
 
-    return resolved, skipped
+                try:
+                    num = int(choice)
+                    if 1 <= num <= len(cat_list):
+                        category = cat_list[num - 1]
+                        if (
+                            is_income
+                            and category == "Salary"
+                            and tx.amount < categories.income_salary_min_amount
+                        ):
+                            console.print(
+                                f"[red]Salary not allowed for credits under "
+                                f"₹{categories.income_salary_min_amount:,.0f}.[/red]"
+                            )
+                            continue
+
+                        resolved.append(
+                            ClassifiedTransaction(
+                                date=tx.date,
+                                description=tx.description,
+                                amount=tx.amount,
+                                type=tx.type,
+                                category=category,
+                                confidence="user",
+                            )
+                        )
+                        mr.upsert_rule(
+                            conn,
+                            mr.pattern_from_description(tx.description),
+                            category,
+                            "user",
+                        )
+                        console.print(f"[green]Assigned: {category}[/green]")
+
+                        _maybe_remember_payee(
+                            console, payees, payee, category, is_p2p, tx.description
+                        )
+                        break
+                    console.print("[red]Invalid number. Try again.[/red]")
+                except ValueError:
+                    console.print("[red]Enter a category number, +, or s to skip.[/red]")
+        except KeyboardInterrupt:
+            _print_interrupt_summary(console, conn, resolved)
+            return resolved, skipped, True
+
+    return resolved, skipped, False
 
 
 def _prompt_add_category(

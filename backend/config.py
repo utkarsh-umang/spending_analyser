@@ -10,6 +10,13 @@ from dotenv import load_dotenv
 
 from backend.models import TransactionType
 
+
+@dataclass
+class UpiAmountRulesConfig:
+    enabled: bool = True
+    exact_amounts: dict[float, str] = field(default_factory=dict)
+    ranges: list[dict] = field(default_factory=list)
+
 load_dotenv()
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -43,6 +50,7 @@ class CategoriesConfig:
     credit_card_income_categories: list[str] = field(default_factory=list)
     learned_expense: set[str] = field(default_factory=set)
     learned_income: set[str] = field(default_factory=set)
+    upi_amount_rules: UpiAmountRulesConfig | None = None
 
     @property
     def categories(self) -> list[str]:
@@ -200,6 +208,10 @@ def load_categories_config() -> CategoriesConfig:
     learned_flags = learned_raw.get("category_flags") or {}
     category_flags = _merge_category_flags(base_flags, learned_flags)
 
+    upi_raw = raw.get("upi_amount_rules") or {}
+    exact_raw = upi_raw.get("exact_amounts") or {}
+    exact_amounts = {float(k): v for k, v in exact_raw.items()}
+
     return CategoriesConfig(
         expense_categories=expense,
         income_categories=income,
@@ -212,6 +224,11 @@ def load_categories_config() -> CategoriesConfig:
         credit_card_income_categories=list(raw.get("credit_card_income_categories") or []),
         learned_expense=learned_expense,
         learned_income=learned_income,
+        upi_amount_rules=UpiAmountRulesConfig(
+            enabled=bool(upi_raw.get("enabled", True)),
+            exact_amounts=exact_amounts,
+            ranges=list(upi_raw.get("ranges") or []),
+        ),
     )
 
 

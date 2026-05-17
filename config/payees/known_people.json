@@ -47,6 +47,136 @@
       "notes": "Zepto quick commerce; card statement often shows RAZGEDDIT CONVENIENCE.",
       "source": "user",
       "updated_at": "2026-05-17T16:30:00+00:00"
+    },
+    {
+      "name": "Travelogy Online Private Limited",
+      "patterns": [
+        "TRAVELOGY ONLINE PRIVATE LIMITED",
+        "TRAVELOGYONLINE"
+      ],
+      "relation": "inferred",
+      "category": "Travel - Flights",
+      "notes": "Look for UPI descriptions containing 'travelogyonline' indicating flight booking via Travelogy.",
+      "source": "user",
+      "updated_at": "2026-05-17T17:27:58.250271+00:00"
+    },
+    {
+      "name": "RVSL",
+      "patterns": [
+        "RVSL"
+      ],
+      "relation": "inferred",
+      "category": "Refunds",
+      "notes": "Look for 'RVSL' in descriptions for potential refunds or reversals.",
+      "source": "user",
+      "updated_at": "2026-05-17T17:28:01.576402+00:00"
+    },
+    {
+      "name": "DroptheQ",
+      "patterns": [
+        "DROPTHEQ"
+      ],
+      "relation": "inferred",
+      "category": "Food and Dining",
+      "notes": "Recognize DroptheQ as a food-ordering/self-checkout platform for food courts and QSRs.",
+      "source": "user",
+      "updated_at": "2026-05-17T17:29:09.520507+00:00"
+    },
+    {
+      "name": "Savana India",
+      "patterns": [
+        "SAVANA INDIA",
+        "SAVANA"
+      ],
+      "relation": "inferred",
+      "category": "Fashion and Lifestyle",
+      "notes": "Savana is a fashion brand; classify UPI payments to Savana as Fashion and Lifestyle.",
+      "source": "user",
+      "updated_at": "2026-05-17T17:30:01.289836+00:00"
+    },
+    {
+      "name": "CRED",
+      "patterns": [
+        "CRED",
+        "CRED.CLUB"
+      ],
+      "relation": "inferred",
+      "category": "Credit Card Payment",
+      "notes": "CRED transactions are typically credit card payments.",
+      "source": "user",
+      "updated_at": "2026-05-17T17:32:53.558575+00:00"
+    },
+    {
+      "name": "Google Payments",
+      "patterns": [
+        "GOOGLE PAYMENTS",
+        "GOOG-PAYMENTS"
+      ],
+      "relation": "inferred",
+      "category": "Cashback",
+      "notes": "Small credits from Google Payments via UPI are likely cashback or promotional credits.",
+      "source": "user",
+      "updated_at": "2026-05-17T17:32:55.621463+00:00"
+    },
+    {
+      "name": "Nandita Mathur",
+      "patterns": [
+        "NANDITA MATHUR",
+        "UPI/NANDITAMATHUR14/SPLITIWISE/STATE BAN"
+      ],
+      "relation": "roommate",
+      "category": "Roommate and Shared Expenses",
+      "notes": "nandita payment for some shared expense",
+      "source": "user",
+      "updated_at": "2026-05-17T17:53:03.767813+00:00"
+    },
+    {
+      "name": "UTKARSH",
+      "patterns": [
+        "UPI/UTKARSH.9866@WA/UPI PAYMENT/STATE BA",
+        "UTKARSH"
+      ],
+      "relation": "boyfriend ig",
+      "category": "Family Transfer",
+      "notes": "utkarsh",
+      "source": "user",
+      "updated_at": "2026-05-17T18:23:23.264693+00:00"
+    },
+    {
+      "name": "RATNASAI",
+      "patterns": [
+        "RATNASAI",
+        "UPI/RATNASAI2904@OK/UPI/STATE BANK OF I/"
+      ],
+      "relation": "colleague",
+      "category": "Splitwise Settlements",
+      "notes": "ratna sai",
+      "source": "user",
+      "updated_at": "2026-05-17T17:56:05.986617+00:00"
+    },
+    {
+      "name": "Vaibhavi",
+      "patterns": [
+        "VAIBHAVI",
+        "UPI/VAIBHAVI1GARG@O/UPI/STATE BANK OF I/"
+      ],
+      "relation": "friend vaibhavi",
+      "category": "Splitwise Settlements",
+      "notes": "vaibhavi",
+      "source": "user",
+      "updated_at": "2026-05-17T18:53:24.149042+00:00"
+    },
+    {
+      "name": "UTKUMANG",
+      "patterns": [
+        "UTKUMANG",
+        "UPI/UTKUMANG@SLC/UPI/NORTH EAST SMAL/503"
+      ],
+      "relation": "boyfriend 2 ig",
+      "category": "Family Transfer",
+      "notes": "utkarsh",
+      "source": "user",
+      "updated_at": "2026-05-17T18:56:10.666426+00:00"
     }
   ]
 }

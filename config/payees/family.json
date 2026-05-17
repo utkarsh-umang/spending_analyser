@@ -37,6 +37,103 @@
       "notes": "internal transfer from one account to another",
       "source": "user",
       "updated_at": "2026-05-17T17:03:55.918111+00:00"
+    },
+    {
+      "name": "Miss Shiv",
+      "patterns": [
+        "MISS SHIV",
+        "MMT/IMPS/428413879943/REQPAY/MISS  SHIV/",
+        "MMT/IMPS/429710723525/REQPAY/MISS  SHIV/"
+      ],
+      "relation": "self",
+      "category": "Internal Transfer",
+      "notes": "transfer from internal account",
+      "source": "user",
+      "updated_at": "2026-05-17T17:54:18.178679+00:00"
+    },
+    {
+      "name": "BHARATPAWARHBL",
+      "patterns": [
+        "BHARATPAWARHBL",
+        "UPI/BHARATPAWARHBL-/UPI/ICICI BANK/42854"
+      ],
+      "relation": "father",
+      "category": "Transfers to Known People",
+      "notes": "transfer to father account",
+      "source": "user",
+      "updated_at": "2026-05-17T17:49:17.799905+00:00"
+    },
+    {
+      "name": "Manisha Pawar",
+      "patterns": [
+        "MANISHA PAWAR",
+        "UPI/MANISHAPAWARHBL/UPI/STATE BANK OF I/"
+      ],
+      "relation": "mother",
+      "category": "Family Transfer",
+      "notes": "Manisha pawar",
+      "source": "user",
+      "updated_at": "2026-05-17T17:56:32.531872+00:00"
+    },
+    {
+      "name": "REQPAY",
+      "patterns": [
+        "REQPAY",
+        "MMT/IMPS/428813672221/REQPAY/MISS  SHIV/"
+      ],
+      "relation": "self",
+      "category": "Internal Transfer",
+      "notes": "transfer from another account",
+      "source": "user",
+      "updated_at": "2026-05-17T17:52:39.956591+00:00"
+    },
+    {
+      "name": "FFPRANAV",
+      "patterns": [
+        "FFPRANAV",
+        "UPI/FFPRANAV51@OKAX/UPI/PUNJAB NATIONAL/"
+      ],
+      "relation": "brother",
+      "category": "Family Transfer",
+      "notes": "pranav",
+      "source": "user",
+      "updated_at": "2026-05-17T17:54:00.907295+00:00"
+    },
+    {
+      "name": "SIDDHIPAWAR",
+      "patterns": [
+        "SIDDHIPAWAR",
+        "UPI/SIDDHIPAWAR.150/UPI/STATE BANK OF I/"
+      ],
+      "relation": "sister",
+      "category": "Family Transfer",
+      "notes": "siddhi",
+      "source": "user",
+      "updated_at": "2026-05-17T18:14:29.915087+00:00"
+    },
+    {
+      "name": "MANISHAPAWARHBL",
+      "patterns": [
+        "MANISHAPAWARHBL",
+        "UPI/MANISHAPAWARHBL/FSSAI/STATE BANK OF "
+      ],
+      "relation": "mother",
+      "category": "Family Transfer",
+      "notes": "manisha",
+      "source": "user",
+      "updated_at": "2026-05-17T18:21:43.965579+00:00"
+    },
+    {
+      "name": "Abhishek Dhane",
+      "patterns": [
+        "ABHISHEK DHANE",
+        "UPI/ABHISHEKDHANE29/UPI/ICICI BANK/50019"
+      ],
+      "relation": "brother",
+      "category": "Transfers to Known People",
+      "notes": "abhishek",
+      "source": "user",
+      "updated_at": "2026-05-17T18:22:40.133605+00:00"
     }
   ]
 }

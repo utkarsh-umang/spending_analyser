@@ -21,6 +21,7 @@ class TransactionProcessor:
         source_file: Path,
         account_id: str,
         dry_run: bool = False,
+        mark_processed: bool = True,
     ) -> tuple[int, int]:
         written = 0
         duplicates = 0
@@ -34,7 +35,7 @@ class TransactionProcessor:
                 txdb.insert_transaction(self.conn, tx, account_id, source_str)
             written += 1
 
-        if not dry_run:
+        if not dry_run and mark_processed:
             file_hash = sha256_file(source_file)
             pf.mark_processed(self.conn, source_str, file_hash, account_id)
 

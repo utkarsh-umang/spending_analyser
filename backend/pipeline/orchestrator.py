@@ -101,8 +101,9 @@ def run_document(
                 "(set OPENAI_API_KEY or HITL_AGENT_ENABLED=true)[/dim]"
             )
 
+        hitl_interrupted = False
         if remaining_uncertain:
-            resolved, skipped_rows = run_hitl(
+            resolved, skipped_rows, hitl_interrupted = run_hitl(
                 conn,
                 remaining_uncertain,
                 categories,
@@ -118,6 +119,7 @@ def run_document(
 
         written = 0
         duplicates = 0
+        pipeline_complete = not hitl_interrupted
         if not dry_run and batch.classified:
             processor = TransactionProcessor(conn)
             written, duplicates = processor.write(
@@ -125,6 +127,7 @@ def run_document(
                 source_file=file_path,
                 account_id=account_id,
                 dry_run=False,
+                mark_processed=pipeline_complete,
             )
         elif dry_run:
             processor = TransactionProcessor(conn)
@@ -133,6 +136,13 @@ def run_document(
                 source_file=file_path,
                 account_id=account_id,
                 dry_run=True,
+            )
+
+        if hitl_interrupted:
+            console.print(
+                f"[green]Partial save:[/green] {written} transaction(s) written to DB. "
+                f"Merchant rules & payees are kept. "
+                f"File [bold]not[/bold] marked processed — re-run to continue HITL."
             )
 
         result = PipelineResult(

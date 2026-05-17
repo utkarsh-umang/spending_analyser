@@ -32,7 +32,9 @@ class ClassifiedTransaction(BaseModel):
     amount: float
     type: TransactionType
     category: str
-    confidence: Literal["rule", "llm", "user", "payee", "keyword", "agent"] = "llm"
+    confidence: Literal[
+        "rule", "llm", "user", "payee", "keyword", "agent", "amount_rule"
+    ] = "llm"
 
 
 class UncertainTransaction(BaseModel):

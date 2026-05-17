@@ -11,6 +11,7 @@ from backend.llm.schemas import CLASSIFICATION_TOOL
 from backend.memory.merchant_keywords import match_merchant_keyword
 from backend.memory.payee_store import PayeeStore
 from backend.memory.upi import extract_payee, is_likely_p2p_transfer
+from backend.memory.upi_amount_rules import match_upi_amount_rule
 from backend.models import (
     ClassifiedTransaction,
     ClassificationBatchResult,
@@ -57,6 +58,11 @@ class Classifier:
                 )
                 if category:
                     confidence = "keyword"
+
+            if not category:
+                category = match_upi_amount_rule(tx, self.categories)
+                if category:
+                    confidence = "amount_rule"
 
             if category:
                 if not self.categories.is_valid_category(
@@ -119,6 +125,8 @@ class Classifier:
         return "UPI/P2P transfer — payee not in memory; needs your category"
 
     def _should_force_hitl(self, tx: RawTransaction) -> bool:
+        if match_upi_amount_rule(tx, self.categories):
+            return False
         if tx.type == TransactionType.EXPENSE and is_likely_p2p_transfer(tx.description):
             return True
         if tx.type == TransactionType.INCOME and self.account_kind == "credit_card":

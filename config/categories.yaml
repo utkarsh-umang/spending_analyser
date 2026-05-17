@@ -24,6 +24,8 @@ expense_categories:
   - Transfers to Known People
   - Investments
   - Credit Card Payment
+  - Offline Shopping
+  - GMAT
   - Other
 
 income_categories:
@@ -51,6 +53,23 @@ category_flags:
     counts_as_income: false
 
 income_salary_min_amount: 10000
+
+# UPI debits with no clear merchant/payee — classify by amount (see upi_amount_rules.py)
+upi_amount_rules:
+  enabled: true
+  exact_amounts:
+    50000: GMAT
+  ranges:
+    - max: 200
+      category: Local Transport
+    - min: 200
+      max: 1000
+      category: Offline Shopping
+    - min: 1000
+      max: 10000
+      category: Online Shopping
+    - min: 10000
+      category: Credit Card Payment
 
 income_merchants:
   Credit Card Payment:
@@ -147,8 +166,10 @@ expense_rules: |
   Fashion and Lifestyle: H&M, Zara, clothing, fashion, jewellery stores — not Amazon/Flipkart unless clearly fashion-only merchant name.
   Travel - Flights: MakeMyTrip, Cleartrip, Goibibo, airline names.
   Travel - Trains: IRCTC only.
-  UPI / IMPS / NEFT to a person: if the payee is NOT in the payee memory files, always mark uncertain — never guess category for P2P transfers.
-  UPI to a business with a clear merchant name: use category_merchants rules above.
+  UPI / IMPS with a known payee in payee memory: use that category.
+  UPI with a clear merchant keyword (Amazon, Zomato, etc.): use category_merchants.
+  UPI with no identifiable payee/merchant: amount rules in upi_amount_rules apply automatically.
+  Named P2P transfers to people (payee known): use payee memory or mark uncertain if unknown.
 
 income_rules: |
   - Large employer salary/payroll credits → Salary.
